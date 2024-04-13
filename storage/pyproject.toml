@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "storage"
+name = "backend"
 description = ""
 readme = "README.md"
 package-mode = false
