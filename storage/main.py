@@ -1,11 +1,9 @@
 from fastapi import FastAPI
 
+from storage import storage_main
+
 app = FastAPI()
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+app.mount("/storage", storage_main.storage_app)
 
 
 @app.get("/hello/{name}")
