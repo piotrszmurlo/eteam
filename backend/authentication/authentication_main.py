@@ -5,4 +5,4 @@ storage_app = FastAPI()
 
 @storage_app.get("/")
 async def root():
-    return {"message": "storage World"}
+    return {"message": "hello auth"}
