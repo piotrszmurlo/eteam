@@ -7,7 +7,7 @@ def call_api_gateway(request: Request):
     if service_id == str(1):
         raise RedirectStorageServiceException()
     elif service_id == str(2):
-        raise RedirectFacultyPortalException()
+        raise RedirectNotificationPortalException()
     elif service_id == str(3):
         raise RedirectLibraryPortalException()
 
@@ -16,7 +16,7 @@ class RedirectStorageServiceException(Exception):
     pass
 
 
-class RedirectFacultyPortalException(Exception):
+class RedirectNotificationPortalException(Exception):
     pass
 
 
