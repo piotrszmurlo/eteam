@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-storage_app = FastAPI()
+auth_app = FastAPI()
 
 
-@storage_app.get("/")
+@auth_app.get("/")
 async def root():
     return {"message": "hello auth"}
