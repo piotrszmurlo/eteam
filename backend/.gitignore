@@ -3,3 +3,4 @@ __pycache__
 .DS_Store
 info.log
 client_secret.json
+active_env.ps1
