@@ -14,9 +14,9 @@ from loguru import logger
 app = FastAPI()
 app.include_router(main.router, dependencies=[Depends(call_api_gateway)])
 
-app.mount("/eteam/storage", storage_main.storage_app)
-app.mount("/eteam/auth", authentication_main.auth_app)
-app.mount("/eteam/notification", notification_main.notification_app)
+app.mount("/storage", storage_main.storage_app)
+app.mount("/auth", authentication_main.auth_app)
+app.mount("/notification", notification_main.notification_app)
 logger.add("info.log", format="Log: [{extra[log_id]}: {time} - {level} - {message} ", level="INFO", enqueue=True)
 
 
@@ -37,17 +37,17 @@ async def log_middleware(request: Request, call_next):
 
 @app.exception_handler(RedirectStorageServiceException)
 def exception_handler_student(request: Request, exc: RedirectStorageServiceException) -> Response:
-    return RedirectResponse(url='http://localhost:8000/eteam/storage/hello')
+    return RedirectResponse(url='http://localhost:8000/storage/hello')
 
 
 @app.exception_handler(RedirectNotificationPortalException)
 def exception_handler_faculty(request: Request, exc: RedirectNotificationPortalException) -> Response:
-    return RedirectResponse(url='http://localhost:8000/eteam/notification/hello')
+    return RedirectResponse(url='http://localhost:8000/notification/hello')
 
 
 @app.exception_handler(RedirectLibraryPortalException)
 def exception_handler_library(request: Request, exc: RedirectLibraryPortalException) -> Response:
-    return RedirectResponse(url='http://localhost:8000/eteam/library/hello')
+    return RedirectResponse(url='http://localhost:8000/library/hello')
 
 
 @app.get("/hello")
