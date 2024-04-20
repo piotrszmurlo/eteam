@@ -5,20 +5,20 @@ def call_api_gateway(request: Request):
     service_id = request.path_params['service_id']
     print(request.path_params)
     if service_id == str(1):
-        raise RedirectStorageServiceException()
+        raise RedirectAuthServiceException()
     elif service_id == str(2):
-        raise RedirectNotificationPortalException()
+        raise RedirectStorageServiceException()
     elif service_id == str(3):
-        raise RedirectLibraryPortalException()
+        raise RedirectNotificationServiceException()
+
+
+class RedirectAuthServiceException(Exception):
+    pass
 
 
 class RedirectStorageServiceException(Exception):
     pass
 
 
-class RedirectNotificationPortalException(Exception):
-    pass
-
-
-class RedirectLibraryPortalException(Exception):
+class RedirectNotificationServiceException(Exception):
     pass

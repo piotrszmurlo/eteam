@@ -3,8 +3,8 @@ from uuid import uuid4
 from fastapi import FastAPI, Depends, Request, Response
 from starlette.responses import RedirectResponse, JSONResponse
 
-from gateway.api_router import call_api_gateway, RedirectStorageServiceException, RedirectNotificationPortalException, \
-    RedirectLibraryPortalException
+from gateway.api_router import call_api_gateway, RedirectStorageServiceException, RedirectNotificationServiceException, \
+    RedirectAuthServiceException
 from storage import storage_main
 from authentication import authentication_main
 from notification import notification_main
@@ -35,19 +35,18 @@ async def log_middleware(request: Request, call_next):
             return response
 
 
+@app.exception_handler(RedirectAuthServiceException)
+def exception_handler_library(request: Request, exc: RedirectAuthServiceException) -> Response:
+    return RedirectResponse(url='http://localhost:8000/auth/hello')
+
 @app.exception_handler(RedirectStorageServiceException)
 def exception_handler_student(request: Request, exc: RedirectStorageServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/storage/hello')
 
 
-@app.exception_handler(RedirectNotificationPortalException)
-def exception_handler_faculty(request: Request, exc: RedirectNotificationPortalException) -> Response:
+@app.exception_handler(RedirectNotificationServiceException)
+def exception_handler_faculty(request: Request, exc: RedirectNotificationServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/notification/hello')
-
-
-@app.exception_handler(RedirectLibraryPortalException)
-def exception_handler_library(request: Request, exc: RedirectLibraryPortalException) -> Response:
-    return RedirectResponse(url='http://localhost:8000/library/hello')
 
 
 @app.get("/hello")
