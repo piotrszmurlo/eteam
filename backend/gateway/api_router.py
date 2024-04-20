@@ -4,11 +4,11 @@ from fastapi import Request
 def call_api_gateway(request: Request):
     service_id = request.path_params['service_id']
     print(request.path_params)
-    if service_id == str(1):
+    if service_id == 'auth':
         raise RedirectAuthServiceException()
-    elif service_id == str(2):
+    elif service_id == 'storage':
         raise RedirectStorageServiceException()
-    elif service_id == str(3):
+    elif service_id == 'notification':
         raise RedirectNotificationServiceException()
 
 
