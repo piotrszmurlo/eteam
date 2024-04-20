@@ -48,7 +48,8 @@ async def callback(request: Request):
         token_dict = flow.fetch_token(authorization_response=str(request.url))
         # token_dict['id_token'] += "AA"         # modyfikacja tokenu powoduje błąd i następuje przekierowanie do ponownego logowania
         info = verify_token(token_dict["id_token"])
-        return info
+        # return info
+        return token_dict
 
     except Exception as e:
         return RedirectResponse(url="http://localhost:8000/auth/login")
