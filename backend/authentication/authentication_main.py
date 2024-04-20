@@ -1,15 +1,16 @@
 import json
-
-from fastapi import FastAPI
-
+from fastapi import FastAPI, HTTPException
 import google_auth_oauthlib.flow
 import google_auth_oauthlib.interactive
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import requests as req
 from fastapi import Request
-from starlette.responses import RedirectResponse
 import os
 from google.auth import jwt
+from fastapi.responses import RedirectResponse
+from urllib.parse import urlencode
+
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 auth_app = FastAPI(debug=True)
@@ -22,14 +23,52 @@ flow.redirect_uri = 'http://localhost:8000/auth/callback'
 
 CLIENT_ID = None
 
-
 def verify_token(token):
     info = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
     return info
 
 
+
+
+
+@auth_app.get("/callback")
+def callback(request: Request):
+    token_dict = flow.fetch_token(authorization_response=str(request.url))
+    info = verify_token(token_dict["id_token"])
+    user_name = info["name"]
+    user_sub = info["sub"]
+
+    print(user_name)
+
+    user_data = {
+        "name": user_name,
+        "sub": user_sub
+    }
+
+    add_user_url = "http://localhost:8000/storage/add_user"
+
+    response = req.post(add_user_url, json=user_data)
+
+    return {"message": "User added .."}
+
+
+
 @auth_app.get("/hello")
-async def root():
+def root():
+
+    user_data = {
+        "user_id": 1,
+        "name": "Adam",
+        "surname": "Mont",
+        "company": "Birds"
+    }
+
+    add_user_url = "http://localhost:8000/storage/hello"
+
+    response = req.get(add_user_url, json=user_data)
+
+    print(response.json)
+
     return {"message": "hello auth"}
 
 
@@ -41,14 +80,3 @@ async def login():
     )
     return RedirectResponse(url=authorization_url)
 
-
-@auth_app.get("/callback")
-async def callback(request: Request):
-    try:
-        token_dict = flow.fetch_token(authorization_response=str(request.url))
-        # token_dict['id_token'] += "AA"         # modyfikacja tokenu powoduje błąd i następuje przekierowanie do ponownego logowania
-        info = verify_token(token_dict["id_token"])
-        return info
-
-    except Exception as e:
-        return RedirectResponse(url="http://localhost:8000/auth/login")
