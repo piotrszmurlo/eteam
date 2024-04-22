@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import FastAPI, Depends
 
 from common.dependencies import verify_token
-from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel
+from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel
 from storage.repository import StorageRepository
 
 
@@ -41,3 +41,17 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
 async def get_files_for_user(token: Annotated[str, Depends(verify_token)]) -> list[FileModel]:
     storage_repo = StorageRepository()
     return storage_repo.get_files(user_id=token["sub"])
+
+
+@storage_app.patch("/files")
+async def rename_file(file_rename: FileRenameModel, token: Annotated[str, Depends(verify_token)]) -> FileIdResponse:
+    storage_repo = StorageRepository()
+    updated_file_id = storage_repo.rename_file(file_id=file_rename.file_id, new_file_name=file_rename.file_name)
+    return FileIdResponse(file_id=updated_file_id)
+
+
+@storage_app.delete("/files")
+async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depends(verify_token)]) -> FileIdResponse:
+    storage_repo = StorageRepository()
+    deleted_file_id = storage_repo.delete_file(file_id=file_delete.file_id)
+    return FileIdResponse(file_id=deleted_file_id)

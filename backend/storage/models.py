@@ -29,3 +29,12 @@ class UserIdResponse(BaseModel):
 
 class FileIdResponse(BaseModel):
     file_id: uuid.UUID
+
+
+class FileRenameModel(BaseModel):
+    file_id: uuid.UUID
+    file_name: str
+
+
+class FileDeleteModel(BaseModel):
+    file_id: uuid.UUID
