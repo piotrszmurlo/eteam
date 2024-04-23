@@ -6,7 +6,7 @@ from common.base_model import BaseModel
 
 
 class UserModel(BaseModel):
-    user_id: str
+    user_id: str                # uuid nie działa, bo user_id=token["sub"] jest stringiem
     user_name: str
 
     class Config:
@@ -32,8 +32,7 @@ class FileIdResponse(BaseModel):
 
 
 class FileRenameModel(BaseModel):
-    file_id: uuid.UUID
-    file_name: str
+    file_name: str | None = None
 
 
 class FileDeleteModel(BaseModel):

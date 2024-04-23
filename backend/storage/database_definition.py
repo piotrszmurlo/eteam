@@ -8,7 +8,7 @@ UserTable = Table(
     "users",
     metadata_obj,
     Column("user_id", String(), primary_key=True),
-    Column("user_name", String(16), nullable=False),
+    Column("user_name", String(), nullable=False),
 )
 
 FileTable = Table(
