@@ -66,12 +66,18 @@ async def get_files_for_user(token: Annotated[str, Depends(verify_token)]) -> li
 @storage_app.patch("/files")
 async def rename_file(file_id: uuid.UUID, file_rename: FileRenameModel, token: Annotated[str, Depends(verify_token)]) -> FileIdResponse:
     storage_repo = StorageRepository()
-    updated_file_id = storage_repo.rename_file(file_id=file_id, new_file=file_rename)
+    try:
+        updated_file_id = storage_repo.rename_file(file_id=file_id, new_file=file_rename)
+    except:
+        raise HTTPException(status_code=400, detail=f"File does not exists!")
     return FileIdResponse(file_id=updated_file_id)
 
 
 @storage_app.delete("/files")
 async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depends(verify_token)]) -> FileIdResponse:
     storage_repo = StorageRepository()
-    deleted_file_id = storage_repo.delete_file(file_id=file_delete.file_id)
+    try:
+        deleted_file_id = storage_repo.delete_file(file_id=file_delete.file_id)
+    except:
+        raise HTTPException(status_code=400, detail=f"File does not exists!")
     return FileIdResponse(file_id=deleted_file_id)

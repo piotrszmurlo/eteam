@@ -6,3 +6,6 @@ class UserDoesNotExists(Exception):
 
 class FileAlreadyExists(Exception):
     ...
+
+class FileDoesNotExists(Exception):
+    ...

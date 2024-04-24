@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from storage.models import UserModel, FileModel, FileRenameModel
 from storage.database_definition import UserTable, FileTable
-from storage.exceptions import UserAlreadyExists, UserDoesNotExists, FileAlreadyExists
+from storage.exceptions import UserAlreadyExists, UserDoesNotExists, FileAlreadyExists, FileDoesNotExists
 
 import logging
 
@@ -41,13 +41,12 @@ class StorageRepository():
         return UserModel.model_validate(user)
 
     def insert_file(self, file: FileModel) -> uuid.UUID:
-
         # FIXME: miałem tego nie robić w ten sposób,
         # ale file_name nie jest primary key, więc akceptuje duplikaty nazw i nie oznacza to błędu
         stmt_check = select(FileTable).where(FileTable.c.file_name == file.file_name)
         result = self._connection.execute(stmt_check).fetchone()
         if result is not None:
-            raise FileAlreadyExists(f"Plik o nazwie {file.file_name} już istnieje.")
+            raise FileAlreadyExists()
 
         stmt = (
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
@@ -60,7 +59,8 @@ class StorageRepository():
         return file.file_id
 
     def get_files(self, user_id: str) -> list[FileModel]:
-
+        # FIXME: to samo co wyżej
+        # jak nie ma takiego użytkownika to i tak zwraca []
         user_stmt = select(UserTable).where(UserTable.c.user_id == user_id)
         user_result = self._connection.execute(user_stmt).first()
         if user_result is None:
@@ -74,7 +74,7 @@ class StorageRepository():
         return [FileModel.model_validate(file) for file in files]
 
     def rename_file(self, file_id: uuid.UUID, new_file: FileRenameModel) -> uuid.UUID:
-
+        # sprawdzenie czy żądanie jest puste
         update_dict = new_file.model_dump(exclude_none=True)
         if not update_dict:
             return file_id
@@ -84,13 +84,14 @@ class StorageRepository():
             .where(FileTable.c.file_id == str(file_id))
             .values(update_dict)
         )
-        print(new_file.model_dump(exclude_none=True))
-        try:
-            self._connection.execute(stmt)
-            self._connection.commit()
-        except Exception as e:
-            print(str(e))
-            self._connection.close()
+
+        result = self._connection.execute(stmt)
+        self._connection.commit()
+        # sprawdzenie czy update coś zmienił
+        # bo nawet jak ID jest błędne to po prostu nic nie zmienia
+        if result.rowcount == 0:
+            raise FileNotFoundError()
+        self._connection.close()
         return file_id
     
     def delete_file(self, file_id: uuid.UUID) -> uuid.UUID:
@@ -98,7 +99,10 @@ class StorageRepository():
                 delete(FileTable)
                 .where(FileTable.c.file_id == str(file_id))
         )
-        self._connection.execute(stmt)
+        result = self._connection.execute(stmt)
         self._connection.commit()
+        # analogiczne sprawdzenie jak wyżej
+        if result.rowcount == 0:
+            raise FileNotFoundError()
         self._connection.close()
         return file_id
