@@ -90,7 +90,7 @@ class StorageRepository():
         # sprawdzenie czy update coś zmienił
         # bo nawet jak ID jest błędne to po prostu nic nie zmienia
         if result.rowcount == 0:
-            raise FileNotFoundError()
+            raise FileDoesNotExists()
         self._connection.close()
         return file_id
     
@@ -103,6 +103,6 @@ class StorageRepository():
         self._connection.commit()
         # analogiczne sprawdzenie jak wyżej
         if result.rowcount == 0:
-            raise FileNotFoundError()
+            raise FileDoesNotExists()
         self._connection.close()
         return file_id
