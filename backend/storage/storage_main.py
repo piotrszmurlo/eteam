@@ -35,7 +35,7 @@ async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
     try:
         user = storage_repo.get_user(user_id=user_id)
     except:
-        raise HTTPException(status_code=400, detail=f"User does not exists!")
+        raise HTTPException(status_code=400, detail=f"User does not exist!")
     return user
 
 
@@ -59,7 +59,7 @@ async def get_files_for_user(token: Annotated[str, Depends(verify_token)]) -> li
     try:
         files = storage_repo.get_files(user_id=user_id)
     except:
-        raise HTTPException(status_code=400, detail=f"User does not exists!")
+        raise HTTPException(status_code=400, detail=f"User does not exist!")
     return files
 
 
@@ -69,7 +69,7 @@ async def rename_file(file_id: uuid.UUID, file_rename: FileRenameModel, token: A
     try:
         updated_file_id = storage_repo.rename_file(file_id=file_id, new_file=file_rename)
     except:
-        raise HTTPException(status_code=400, detail=f"File does not exists!")
+        raise HTTPException(status_code=400, detail=f"File does not exist!")
     return FileIdResponse(file_id=updated_file_id)
 
 
@@ -79,5 +79,5 @@ async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depend
     try:
         deleted_file_id = storage_repo.delete_file(file_id=file_delete.file_id)
     except:
-        raise HTTPException(status_code=400, detail=f"File does not exists!")
+        raise HTTPException(status_code=400, detail=f"File does not exist!")
     return FileIdResponse(file_id=deleted_file_id)
