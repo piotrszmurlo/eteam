@@ -35,7 +35,7 @@ async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
     try:
         user = storage_repo.get_user(user_id=user_id)
     except:
-        raise HTTPException(status_code=400, detail=f"User does not exists!")
+        raise HTTPException(status_code=400, detail=f"User does not exist!")
     return user
 
 
