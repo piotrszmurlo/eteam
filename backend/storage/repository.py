@@ -42,13 +42,6 @@ class StorageRepository():
         return UserModel.model_validate(user)
 
     def insert_file(self, file: FileModel) -> uuid.UUID:
-        # FIXME: miałem tego nie robić w ten sposób,
-        # ale file_name nie jest primary key, więc akceptuje duplikaty nazw i nie oznacza to błędu
-        stmt_check = select(FileTable).where(FileTable.c.file_name == file.file_name)
-        result = self._connection.execute(stmt_check).fetchone()
-        if result is not None:
-            raise FileAlreadyExists()
-
         stmt = (
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
         )
