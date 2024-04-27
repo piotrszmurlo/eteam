@@ -3,8 +3,13 @@ from uuid import uuid4
 from fastapi import FastAPI, Depends, Request, Response
 from starlette.responses import RedirectResponse, JSONResponse
 
-from gateway.api_router import call_api_gateway, RedirectAuthServiceException, RedirectStorageServiceException, \
-    RedirectNotificationServiceException, RedirectPaymentServiceException
+from gateway.api_router import (
+    call_api_gateway,
+    RedirectAuthServiceException, 
+    RedirectStorageServiceException,
+    RedirectNotificationServiceException, 
+    RedirectPaymentServiceException,
+)
 from authentication import authentication_main
 from storage import storage_main
 from notification import notification_main
