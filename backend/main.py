@@ -59,7 +59,7 @@ def exception_handler_faculty(request: Request, exc: RedirectNotificationService
 
 
 @app.exception_handler(RedirectPaymentServiceException)
-def exception_handler_faculty(request: Request, exc: RedirectNotificationServiceException) -> Response:
+def exception_handler_payment(request: Request, exc: RedirectPaymentServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/payment/hello')
 
 
