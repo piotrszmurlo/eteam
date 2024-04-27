@@ -8,9 +8,6 @@ class UserModel(BaseModel):
     user_name: str
     user_email: str
 
-    class Config:
-        from_attributes = True
-
 class UserIdResponse(BaseModel):
     user_id: str
 
