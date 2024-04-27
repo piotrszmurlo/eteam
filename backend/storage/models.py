@@ -9,8 +9,6 @@ class UserModel(BaseModel):
     user_id: str                # uuid nie działa, bo user_id=token["sub"] jest stringiem
     user_name: str
 
-    class Config:
-        from_attributes = True
 
 
 class FileModel(BaseModel):
