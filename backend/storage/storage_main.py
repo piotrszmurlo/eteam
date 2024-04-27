@@ -69,7 +69,7 @@ async def rename_file(file_id: uuid.UUID, file_rename: FileRenameModel, token: A
     try:
         updated_file_id = storage_repo.rename_file(file_id=file_id, new_file=file_rename)
     except:
-        raise HTTPException(status_code=400, detail=f"File does not exists!")
+        raise HTTPException(status_code=400, detail=f"File does not exist!")
     return FileIdResponse(file_id=updated_file_id)
 
 
