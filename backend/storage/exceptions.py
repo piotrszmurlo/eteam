@@ -7,5 +7,5 @@ class UserDoesNotExist(Exception):
 class FileAlreadyExists(Exception):
     ...
 
-class FileDoesNotExists(Exception):
+class FileDoesNotExist(Exception):
     ...
