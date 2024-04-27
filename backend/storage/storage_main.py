@@ -59,7 +59,7 @@ async def get_files_for_user(token: Annotated[str, Depends(verify_token)]) -> li
     try:
         files = storage_repo.get_files(user_id=user_id)
     except:
-        raise HTTPException(status_code=400, detail=f"User does not exists!")
+        raise HTTPException(status_code=400, detail=f"User does not exist!")
     return files
 
 
