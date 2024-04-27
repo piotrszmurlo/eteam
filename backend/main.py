@@ -49,7 +49,7 @@ def exception_handler_auth(request: Request, exc: RedirectAuthServiceException) 
 
 
 @app.exception_handler(RedirectStorageServiceException)
-def exception_handler_student(request: Request, exc: RedirectStorageServiceException) -> Response:
+def exception_handler_storage(request: Request, exc: RedirectStorageServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/storage/hello')
 
 
