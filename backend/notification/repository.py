@@ -4,8 +4,7 @@ from sqlalchemy import create_engine, select, insert, update, delete
 from sqlalchemy.exc import IntegrityError
 from notification.models import UserModel
 from notification.database_definition import UserTable
-
-from notification.exceptions import UserAlreadyExists, UserDoesNotExists
+from notification.exceptions import UserAlreadyExists, UserDoesNotExist
 
 
 class NotificationRepository():
@@ -35,7 +34,7 @@ class NotificationRepository():
         try:
             user = self._connection.execute(stmt).fetchone()
         except IntegrityError:
-            raise UserDoesNotExists()
+            raise UserDoesNotExist()
         finally:
             self._connection.close()
         return UserModel.model_validate(user)

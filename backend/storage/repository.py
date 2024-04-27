@@ -42,10 +42,14 @@ class StorageRepository():
         return UserModel.model_validate(user)
 
     def insert_file(self, file: FileModel) -> uuid.UUID:
+        user_stmt = select(UserTable).where(UserTable.c.user_id == file.user_id)
+        user_result = self._connection.execute(user_stmt).first()
+        if user_result is None:
+            raise UserDoesNotExist()
+        
         stmt = (
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
         )
-
         self._connection.execute(stmt)
         self._connection.commit()
         self._connection.close()
