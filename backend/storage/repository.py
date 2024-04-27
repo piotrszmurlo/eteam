@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from storage.models import UserModel, FileModel, FileRenameModel
 from storage.database_definition import UserTable, FileTable
-from storage.exceptions import UserAlreadyExists, UserDoesNotExists, FileAlreadyExists, FileDoesNotExists
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileAlreadyExists, FileDoesNotExist
 
 import logging
 
@@ -36,7 +36,7 @@ class StorageRepository():
         try:
             user = self._connection.execute(stmt).fetchone()
         except IntegrityError:
-            raise UserDoesNotExists()
+            raise UserDoesNotExist()
         finally:
             self._connection.close()
         return UserModel.model_validate(user)
@@ -46,19 +46,16 @@ class StorageRepository():
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
         )
 
-        # FIXME: czy tutaj jakiś try/except powinien być?
         self._connection.execute(stmt)
         self._connection.commit()
         self._connection.close()
         return file.file_id
 
     def get_files(self, user_id: str) -> list[FileModel]:
-        # FIXME: to samo co wyżej
-        # jak nie ma takiego użytkownika to i tak zwraca []
         user_stmt = select(UserTable).where(UserTable.c.user_id == user_id)
         user_result = self._connection.execute(user_stmt).first()
         if user_result is None:
-            raise UserDoesNotExists()
+            raise UserDoesNotExist()
 
         stmt = (
             select(FileTable).where(FileTable.c.user_id == user_id)
@@ -81,10 +78,8 @@ class StorageRepository():
 
         result = self._connection.execute(stmt)
         self._connection.commit()
-        # sprawdzenie czy update coś zmienił
-        # bo nawet jak ID jest błędne to po prostu nic nie zmienia
         if result.rowcount == 0:
-            raise FileDoesNotExists()
+            raise FileDoesNotExist()
         self._connection.close()
         return file_id
     
@@ -95,8 +90,7 @@ class StorageRepository():
         )
         result = self._connection.execute(stmt)
         self._connection.commit()
-        # analogiczne sprawdzenie jak wyżej
         if result.rowcount == 0:
-            raise FileDoesNotExists()
+            raise FileDoesNotExist()
         self._connection.close()
         return file_id
