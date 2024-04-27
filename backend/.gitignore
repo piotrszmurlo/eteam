@@ -4,3 +4,4 @@ __pycache__
 info.log
 client_secret.json
 active_env.ps1
+venv

@@ -10,15 +10,18 @@ def call_api_gateway(request: Request):
         raise RedirectStorageServiceException()
     elif service_id == 'notification':
         raise RedirectNotificationServiceException()
+    elif service_id == 'payment':
+        raise RedirectPaymentServiceException()
 
 
 class RedirectAuthServiceException(Exception):
     pass
 
-
 class RedirectStorageServiceException(Exception):
     pass
 
-
 class RedirectNotificationServiceException(Exception):
+    pass
+
+class RedirectPaymentServiceException(Exception):
     pass

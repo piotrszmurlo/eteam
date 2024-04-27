@@ -2,7 +2,6 @@
 name = "backend"
 description = ""
 readme = "README.md"
-package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -13,6 +12,7 @@ loguru = "^0.7.2"
 google-api-python-client = "^2.125.0"
 google-auth-oauthlib = "^1.2.0"
 pyjwt = "^2.8.0"
+sqlalchemy = "^2.0.29"
 
 
 [build-system]

@@ -11,6 +11,7 @@ from starlette.responses import RedirectResponse
 import os
 from google.auth import jwt
 
+
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 auth_app = FastAPI(debug=True)
 
@@ -47,8 +48,8 @@ async def callback(request: Request):
     try:
         token_dict = flow.fetch_token(authorization_response=str(request.url))
         # token_dict['id_token'] += "AA"         # modyfikacja tokenu powoduje błąd i następuje przekierowanie do ponownego logowania
-        info = verify_token(token_dict["id_token"])
-        return info
+        verify_token(token_dict["id_token"])
+        return token_dict["id_token"]
 
     except Exception as e:
         return RedirectResponse(url="http://localhost:8000/auth/login")
