@@ -9,9 +9,10 @@ from notification.exceptions import UserAlreadyExists, UserDoesNotExists
 
 
 class NotificationRepository():
+    ENGINE = create_engine("sqlite:///notification/notification.db")
+
     def __init__(self) -> None:
-        engine = create_engine("sqlite:///notification/notification.db")
-        self._connection = engine.connect()
+        self._connection = self.ENGINE.connect()
 
     def insert_user(self, user: UserModel) -> str:
         stmt = (
