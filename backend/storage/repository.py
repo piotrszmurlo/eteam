@@ -11,9 +11,10 @@ import logging
 
 
 class StorageRepository():
+    ENGINE = create_engine("sqlite:///storage/storage.db")
+
     def __init__(self) -> None:
-        engine = create_engine("sqlite:///storage/storage.db")
-        self._connection = engine.connect()
+        self._connection = self.ENGINE.connect()
 
     def insert_user(self, user: UserModel) -> str:
         stmt = (
