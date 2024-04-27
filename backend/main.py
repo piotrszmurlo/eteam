@@ -44,7 +44,7 @@ async def log_middleware(request: Request, call_next):
 
 
 @app.exception_handler(RedirectAuthServiceException)
-def exception_handler_library(request: Request, exc: RedirectAuthServiceException) -> Response:
+def exception_handler_auth(request: Request, exc: RedirectAuthServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/auth/hello')
 
 
