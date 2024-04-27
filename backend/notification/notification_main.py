@@ -33,5 +33,5 @@ async def get_user_email(token: Annotated[str, Depends(verify_token)]) -> UserMo
     try:
         email = notification_repo.get_user(user_id=user_id)
     except:
-        raise HTTPException(status_code=400, detail=f"User does not exists!")
+        raise HTTPException(status_code=400, detail=f"User does not exist!")
     return email
