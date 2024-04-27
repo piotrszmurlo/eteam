@@ -79,5 +79,5 @@ async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depend
     try:
         deleted_file_id = storage_repo.delete_file(file_id=file_delete.file_id)
     except:
-        raise HTTPException(status_code=400, detail=f"File does not exists!")
+        raise HTTPException(status_code=400, detail=f"File does not exist!")
     return FileIdResponse(file_id=deleted_file_id)
