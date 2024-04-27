@@ -54,7 +54,7 @@ def exception_handler_storage(request: Request, exc: RedirectStorageServiceExcep
 
 
 @app.exception_handler(RedirectNotificationServiceException)
-def exception_handler_faculty(request: Request, exc: RedirectNotificationServiceException) -> Response:
+def exception_handler_notification(request: Request, exc: RedirectNotificationServiceException) -> Response:
     return RedirectResponse(url='http://localhost:8000/notification/hello')
 
 
