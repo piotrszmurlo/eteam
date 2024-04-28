@@ -1,6 +1,5 @@
-import uuid
 
-from sqlalchemy import create_engine, select, insert, update, delete
+from sqlalchemy import create_engine, select, insert
 from sqlalchemy.exc import IntegrityError
 from notification.models import UserModel
 from notification.database_definition import UserTable

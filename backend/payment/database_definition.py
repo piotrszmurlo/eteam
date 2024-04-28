@@ -1,25 +1,23 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKey
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import (
+    create_engine,
+    Enum,
+    Float,
+    Column,
+    String,
+)
+from sqlalchemy.ext.declarative import declarative_base
 
+Base = declarative_base()
 engine = create_engine("sqlite:///payment/payment.db")
 
-SessionFactory = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-metadata_obj = MetaData()
+class PaymentTable(Base):
+    __tablename__ = "payments"
 
-UserTable = Table(
-    "users",
-    metadata_obj,
-    Column("user_id", String(), primary_key=True),
-    Column("user_name", String(), nullable=False),
-)
+    payment_id = Column(String, primary_key=True)
+    user_id = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
+    status = Column(Enum("pending", "completed", "failed"), nullable=False)
 
-FileTable = Table(
-    "files",
-    metadata_obj,
-    Column("file_id", String(), primary_key=True),
-    Column("user_id", String(), ForeignKey("users.user_id"), nullable=False),
-    Column("file_name", String(), nullable=False),
-)
 
-metadata_obj.create_all(engine)
+Base.metadata.create_all(engine)

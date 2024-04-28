@@ -35,8 +35,8 @@ async def log_middleware(request: Request, call_next):
         logger.info('Request to access ' + request.url.path)
         try:
             response = await call_next(request)
-        except Exception as ex:
-            logger.error(f"Request to " + request.url.path + " failed: {ex}")
+        except Exception:
+            logger.error("Request to " + request.url.path + " failed: {ex}")
             response = JSONResponse(content={"success": False}, status_code=500)
         finally:
             logger.info('Successfully accessed ' + request.url.path)
@@ -65,4 +65,4 @@ def exception_handler_payment(request: Request, exc: RedirectPaymentServiceExcep
 
 @app.get("/hello")
 async def say_hello():
-    return {"message": f"Hello main"}
+    return {"message": "Hello main"}

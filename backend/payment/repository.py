@@ -1,18 +1,41 @@
-from sqlalchemy.orm import Session
+from certifi import where
+from sqlalchemy import create_engine, insert, select, update, where
+from payment.models import PaymentModel
+from payment.database_definition import PaymentTable
 
 
 class PaymentRepository:
-    def __init__(self, session: Session) -> None:
-        self.sess = session
+    engine = create_engine("sqlite:///payment/payment.db")
 
-    def insert_payment(self):
-        pass
+    def __init__(self) -> None:
+        self._connection = self.engine.connect()
+
+    def insert_payment(self, payment: PaymentModel):
+        statement = insert(PaymentTable).values(payment.model_dump())
+        try:
+            self._connection.execute(statement)
+            self._connection.commit()
+        except:
+            pass
 
     def get_payments(self, user_id: str):
-        pass
+        statement = select(PaymentTable).where(PaymentTable.c.user_id == user_id)
+        try:
+            payments = self._connection.execute(statement).fetchall()
+            return payments
+        except:
+            pass
 
-    def update_payment(self):
-        pass
+    def update_payment_status(self, payment_id: str, new_status: str):
+        statement = (
+            update(PaymentTable)
+            .where(PaymentTable.c.payment_id == payment_id)
+            .values(status=new_status)
+        )
+        try:
+            self._connection.execute(statement)
+        except:
+            pass
 
     def delete_payment(self):
         pass
