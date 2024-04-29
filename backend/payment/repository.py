@@ -1,5 +1,5 @@
 from certifi import where
-from sqlalchemy import create_engine, insert, select, update, where
+from sqlalchemy import create_engine, insert, select, update
 from payment.models import PaymentModel
 from payment.database_definition import PaymentTable
 
@@ -26,10 +26,10 @@ class PaymentRepository:
         except:
             pass
 
-    def update_payment_status(self, payment_id: str, new_status: str):
+    def update_payment_status(self, stripe_id: str, new_status: str):
         statement = (
             update(PaymentTable)
-            .where(PaymentTable.c.payment_id == payment_id)
+            .where(PaymentTable.c.stripe_id == stripe_id)
             .values(status=new_status)
         )
         try:

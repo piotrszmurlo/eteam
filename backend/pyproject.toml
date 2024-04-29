@@ -1,5 +1,9 @@
+
+
 [tool.poetry]
 name = "backend"
+version = "0.0.1"
+authors = ["eteam"]
 description = ""
 readme = "README.md"
 
