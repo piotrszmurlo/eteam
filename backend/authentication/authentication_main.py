@@ -1,4 +1,3 @@
-import json
 
 from fastapi import FastAPI
 
@@ -9,7 +8,6 @@ from google.auth.transport import requests
 from fastapi import Request
 from starlette.responses import RedirectResponse
 import os
-from google.auth import jwt
 
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -51,5 +49,5 @@ async def callback(request: Request):
         verify_token(token_dict["id_token"])
         return token_dict["id_token"]
 
-    except Exception as e:
+    except Exception:
         return RedirectResponse(url="http://localhost:8000/auth/login")

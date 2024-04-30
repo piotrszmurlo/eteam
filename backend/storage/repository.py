@@ -5,9 +5,8 @@ from sqlalchemy.exc import IntegrityError
 
 from storage.models import UserModel, FileModel, FileRenameModel
 from storage.database_definition import UserTable, FileTable
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileAlreadyExists, FileDoesNotExist
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist
 
-import logging
 
 
 class StorageRepository():
