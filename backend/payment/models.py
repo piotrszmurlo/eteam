@@ -3,17 +3,14 @@ from enum import Enum
 import uuid
 from common.base_model import BaseModel
 
-
 class StatusEnum(str, Enum):
     pending = "pending"
     created = "created"
     failed = "failed"
     completed = "completed"
 
-
 class PaymentModel(BaseModel):
-    payment_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    stripe_id: str | None
+    payment_id: str             # zmienione bo: (sqlite3.ProgrammingError) Error binding parameter 1: type 'UUID' is not supported
     user_id: str
     amount: float
     status: StatusEnum

@@ -1,23 +1,16 @@
-from sqlalchemy import (
-    create_engine,
-    Enum,
-    Float,
-    Column,
-    String,
-)
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKey, Enum, Float
 
-Base = declarative_base()
 engine = create_engine("sqlite:///payment/payment.db")
 
+metadata_obj = MetaData()
 
-class PaymentTable(Base):
-    __tablename__ = "payments"
+PaymentTable = Table(
+    "payments",
+    metadata_obj,
+    Column("payment_id", String(), primary_key=True),
+    Column("user_id", String(128), nullable=False),
+    Column("amount", Float(), nullable=False),
+    Column("status", Enum("pending", "completed", "failed"), nullable=False),
+)
 
-    payment_id = Column(String, primary_key=True)
-    user_id = Column(String, nullable=False)
-    amount = Column(Float, nullable=False)
-    status = Column(Enum("pending", "completed", "failed"), nullable=False)
-
-
-Base.metadata.create_all(engine)
+metadata_obj.create_all(engine)

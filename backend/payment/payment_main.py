@@ -5,7 +5,10 @@ from loguru import logger
 from common.dependencies import verify_token
 from payment.repository import PaymentRepository
 from payment.models import PaymentModel
+from payment.exceptions import PaymentDataBaseError, StripePaymentError
 import stripe
+from starlette.responses import RedirectResponse
+import datetime
 
 payment_app = FastAPI()
 
@@ -30,35 +33,69 @@ async def get_body(request: Request) -> bytes:
     return await request.body()
 
 
-@payment_app.post("/create_payment")
-async def create_payment(token: Annotated[str, Depends(verify_token)], amount: float):
-    try:
+@payment_app.get("/payment_success")
+async def payment_success(user_id: str):
+    payment_repo = PaymentRepository()
 
+    user_payments = payment_repo.get_payments(user_id=user_id, status="pending")
+    stripe_events = stripe.Event.list(limit=10, type="checkout.session.completed", created={"gt": datetime.datetime.now(tz=None)-datetime.timedelta(seconds=15)})
+
+    for event in stripe_events:
+        checkout_id = event['data']['object'].get('id')
+        if checkout_id in [u.payment_id for u in user_payments]:
+            payment_repo.update_payment_status(payment_id=checkout_id, new_status="completed")
+        
+    # TODO: UDERZYĆ DO NOTIFICATION
+    # TODO: UDERZYĆ DO STORAGE --> update plan
+    return{"Success payment - payment id": checkout_id}
+
+@payment_app.get("/payment_cancel")
+async def payment_cancel():
+    # TODO: UDERZYĆ DO NOTIFICATION
+    return{"Payment cancelled"}
+
+
+@payment_app.post("/create_payment")
+async def create_payment(amount: int, token: Annotated[str, Depends(verify_token)]):
+    try:
         price = stripe.Price.create(
-            unit_amount=100000,
+            unit_amount=100 * amount,
             currency="usd",
             product=storage_product,
         )
-        payment_repo = PaymentRepository()
-        payment = PaymentModel(
-            payment_id=uuid.uuid4(),
-            stripe_id=None,
-            user_id=token["sub"],
-            amount=amount,
-            status="pending",
+        # # TODO in future adjust payment links
+        # stripe_payment_link = stripe.PaymentLink.create(
+        #     line_items=[{"price": price.id, "quantity": 1}],
+        #     payment_method_types=["card"],
+        # )
+        checkout_session = stripe.checkout.Session.create(
+            line_items=[
+                {
+                    # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
+                    'price': f'{price.id}',
+                    'quantity': 1,
+                },
+            ],
+            mode='payment',
+            success_url=f'http://localhost:8000/payment/payment_success?user_id={token["sub"]}',
+            cancel_url='http://localhost:8000/payment/payment_cancel',
         )
+    except StripePaymentError:
+        raise HTTPException(status_code=500, detail="Could not create new payment in Stripe.")
+
+    payment_repo = PaymentRepository()
+    payment = PaymentModel(
+        payment_id=checkout_session.id,
+        user_id=token["sub"],
+        amount=amount,
+        status="pending",
+        )
+    try:
         payment_repo.insert_payment(payment)
-
-        # TODO in future adjust payment links
-        payment_link = stripe.PaymentLink.create(
-            line_items=[{"price": price.id, "quantity": 1}],
-            payment_method_types=["card"],
-        )
-        return {"payment link": payment_link.url}
-
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=422, detail="could not craete payment")
+    except PaymentDataBaseError:
+        raise HTTPException(status_code=400, detail="Could not register a new payment in database.")
+    print(checkout_session.url)
+    return RedirectResponse(url=checkout_session.url)
 
 
 @payment_app.post("/webhook")
