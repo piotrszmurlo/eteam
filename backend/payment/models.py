@@ -5,9 +5,8 @@ from common.base_model import BaseModel
 
 class StatusEnum(str, Enum):
     pending = "pending"
-    created = "created"
-    failed = "failed"
     completed = "completed"
+    failed = "failed"
 
 class PaymentModel(BaseModel):
     payment_id: str             # zmienione bo: (sqlite3.ProgrammingError) Error binding parameter 1: type 'UUID' is not supported

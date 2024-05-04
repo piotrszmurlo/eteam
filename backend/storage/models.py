@@ -1,13 +1,21 @@
 import uuid
-
 from pydantic import Field
-
+from enum import Enum
 from common.base_model import BaseModel
+
+
+class PlanEnum(str, Enum):
+    basic = "basic"
+    silver = "silver"
+    gold = "gold"
+    unlimited = "unlimited"
 
 
 class UserModel(BaseModel):
     user_id: str                # uuid nie działa, bo user_id=token["sub"] jest stringiem
     user_name: str
+    # user_plan: PlanEnum = PlanEnum.basic 
+    user_plan: str | None = "basic"
 
 
 
@@ -15,10 +23,12 @@ class FileModel(BaseModel):
     file_id: uuid.UUID = Field(default_factory=uuid.uuid4)
     user_id: str
     file_name: str
+    file_size: float
 
 
 class FileInsertModel(BaseModel):
     file_name: str
+    file_size: float
 
 
 class UserIdResponse(BaseModel):

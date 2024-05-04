@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from common.dependencies import verify_token
 from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel
 from storage.repository import StorageRepository
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
 
 storage_app = FastAPI()
 
@@ -42,11 +42,13 @@ async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
 @storage_app.post("/files")
 async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(verify_token)]) -> FileIdResponse:
     storage_repo = StorageRepository()
-    file = FileModel(user_id=token["sub"], file_name=file_input.file_name)
+    file = FileModel(user_id=token["sub"], file_name=file_input.file_name, file_size=file_input.file_size)
     try:
         file_id = storage_repo.insert_file(file)
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
+    except StorageLimitExceeded:
+        raise HTTPException(status_code=400, detail="Storage limit exceded!")
     return FileIdResponse(file_id=file_id)
 
 

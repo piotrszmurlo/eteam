@@ -9,3 +9,6 @@ class FileAlreadyExists(Exception):
 
 class FileDoesNotExist(Exception):
     ...
+
+class StorageLimitExceeded(Exception):
+    ...
