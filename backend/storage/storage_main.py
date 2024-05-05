@@ -2,13 +2,15 @@ import uuid
 
 from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException
+import requests
 from common.dependencies import verify_token
-from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel
+from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel, UpgradePlan
 from storage.repository import StorageRepository
 from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
 
 storage_app = FastAPI()
 
+storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
 
 @storage_app.get("/hello")
 async def root():
@@ -47,8 +49,16 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
         file_id = storage_repo.insert_file(file)
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
-    except StorageLimitExceeded:
-        raise HTTPException(status_code=400, detail="Storage limit exceded!")
+    except StorageLimitExceeded as e:
+        detail_message = (
+            f"Storage limit exceded. Currently your plan is {storage_plans[e.current_plan_level][0]}. You lack {e.required_space} Mb."
+        )
+        upgrade_details = UpgradePlan(upgrade_plan_level=e.current_plan_level + 1,
+                                      cost=storage_plans[e.current_plan_level + 1][2])
+        print(upgrade_details)
+        # TODO: te dane przekazać do NOTIFICATION
+        # requests.post
+        raise HTTPException(status_code=413, detail=detail_message)
     return FileIdResponse(file_id=file_id)
 
 

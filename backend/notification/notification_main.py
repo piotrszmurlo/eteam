@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import FastAPI, Depends, HTTPException
 from common.dependencies import verify_token
-from notification.models import UserIdResponse, UserModel, UserEmailInput
+from notification.models import UserIdResponse, UserModel, UserEmailInput, UpgradePlan
 from notification.repository import NotificationRepository
 from notification.exceptions import UserAlreadyExists, UserDoesNotExist
 
@@ -35,3 +35,20 @@ async def get_user_email(token: Annotated[str, Depends(verify_token)]) -> UserMo
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
     return email
+
+@notification_app.get("/upgrade_plan")
+async def upgrade_plan(upgrade_details: UpgradePlan, token: Annotated[str, Depends(verify_token)]) -> str:
+    # TODO:
+    # tutaj wyświelić zawartość upgrade details
+    # i wygenerować link do płatności za pomocą payment/create_payment (amount=upgrade_details = cost)
+    return upgrade_details.upgrade_plan_level
+
+
+
+@notification_app.get("/upgrade_plan_success")
+async def upgrade_plan_success(token: Annotated[str, Depends(verify_token)]):
+    return {"message": "Your plan has been upgraded."}
+
+@notification_app.get("/upgrade_plan_fail")
+async def upgrade_plan_fail(token: Annotated[str, Depends(verify_token)]):
+    return {"message": "Fail to upgrade the plan."}

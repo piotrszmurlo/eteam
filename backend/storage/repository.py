@@ -8,6 +8,8 @@ from storage.database_definition import UserTable, FileTable
 from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
 
 
+storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
+
 
 class StorageRepository():
     ENGINE = create_engine("sqlite:///storage/storage.db")
@@ -46,28 +48,18 @@ class StorageRepository():
         if user_result is None:
             raise UserDoesNotExist("The user does not exist")
 
-
         total_files_size_query = select(func.sum(FileTable.c.file_size)).where(FileTable.c.user_id == file.user_id)
         total_files_size_result = self._connection.execute(total_files_size_query).scalar() or 0
         new_total_size = total_files_size_result + file.file_size
-        print(new_total_size)
+        user_plan_level = user_result.user_plan
+        user_plan_limit = storage_plans[user_plan_level][1]
+        required_space = new_total_size - user_plan_limit
+        if new_total_size > user_plan_limit:
+            raise StorageLimitExceeded(
+                "Adding this file would exceed the user's storage limit",
+                current_plan_level=user_plan_level,
+                required_space=required_space)
 
-
-        plan_storage_limits = {
-            "basic": 10,
-            "silver": 50,
-            "gold": 100,
-            "unlimited": float('inf')
-        }
-        user_plan = user_result.user_plan
-        max_storage = plan_storage_limits.get(user_plan, float('inf'))
-
-        # Check if the new file size exceeds the user's storage limit
-        if new_total_size > max_storage:
-            print("too much")
-            raise StorageLimitExceeded("Adding this file would exceed the user's storage limit")
-
-        # Insert the file record
         insert_stmt = (
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
         )

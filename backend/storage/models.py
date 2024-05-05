@@ -14,8 +14,7 @@ class PlanEnum(str, Enum):
 class UserModel(BaseModel):
     user_id: str                # uuid nie działa, bo user_id=token["sub"] jest stringiem
     user_name: str
-    # user_plan: PlanEnum = PlanEnum.basic 
-    user_plan: str | None = "basic"
+    user_plan: int | None = 0
 
 
 
@@ -45,3 +44,8 @@ class FileRenameModel(BaseModel):
 
 class FileDeleteModel(BaseModel):
     file_id: uuid.UUID
+
+
+class UpgradePlan(BaseModel):
+    upgrade_plan_level: int
+    cost: int

@@ -9,8 +9,7 @@ UserTable = Table(
     metadata_obj,
     Column("user_id", String(), primary_key=True),
     Column("user_name", String(128), nullable=False),
-    # Column("user_plan", Enum("basic", "silver", "gold", "unlimited"), nullable=False)
-    Column("user_plan", String(128), nullable=False)
+    Column("user_plan", Integer, nullable=False)
 
 )
 

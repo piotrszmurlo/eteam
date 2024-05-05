@@ -12,3 +12,7 @@ class UserIdResponse(BaseModel):
 
 class UserEmailInput(BaseModel):
     user_email: str
+
+class UpgradePlan(BaseModel):
+    upgrade_plan_level: int
+    cost: int
