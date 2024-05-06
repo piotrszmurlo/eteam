@@ -1,5 +1,5 @@
 import uuid
-
+import asyncio
 from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException
 import requests
@@ -10,7 +10,7 @@ from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotE
 
 storage_app = FastAPI()
 
-storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
+# storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
 
 @storage_app.get("/hello")
 async def root():
@@ -51,14 +51,20 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
         raise HTTPException(status_code=400, detail="User does not exist!")
     except StorageLimitExceeded as e:
         detail_message = (
-            f"Storage limit exceded. Currently your plan is {storage_plans[e.current_plan_level][0]}. You lack {e.required_space} Mb."
+            f"Storage limit exceded. Currently your plan is {e.current_plan_name}. You lack {e.required_space} Mb."
         )
-        upgrade_details = UpgradePlan(upgrade_plan_level=e.current_plan_level + 1,
-                                      cost=storage_plans[e.current_plan_level + 1][2])
-        print(upgrade_details)
-        # TODO: te dane przekazać do NOTIFICATION
-        # requests.post
+        upgrade_plan_name = storage_repo.get_required_plan(e.new_total_size)
+        upgrade_details = UpgradePlan(current_plan_name=e.current_plan_name, upgrade_plan_name=upgrade_plan_name)
+
+        try:
+            task = asyncio.create_task(requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump()))
+        except Exception as e:
+            print(e)
+
+        # requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump())
         raise HTTPException(status_code=413, detail=detail_message)
+    except Exception as e:
+        print(e)
     return FileIdResponse(file_id=file_id)
 
 

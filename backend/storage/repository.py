@@ -1,10 +1,10 @@
 import uuid
 
-from sqlalchemy import create_engine, select, insert, update, delete, func
+from sqlalchemy import create_engine, select, insert, update, delete, func, asc
 from sqlalchemy.exc import IntegrityError
 
 from storage.models import UserModel, FileModel, FileRenameModel
-from storage.database_definition import UserTable, FileTable
+from storage.database_definition import UserTable, FileTable, PlansTable
 from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
 
 
@@ -43,22 +43,25 @@ class StorageRepository():
         return UserModel.model_validate(user)
 
     def insert_file(self, file: FileModel) -> uuid.UUID:
-        user_query = select(UserTable.c.user_plan).where(UserTable.c.user_id == file.user_id)
+        user_query = select(UserTable.c.user_plan, PlansTable.c.limit, PlansTable.c.name).where(UserTable.c.user_id == file.user_id).join(PlansTable, UserTable.c.user_plan==PlansTable.c.level)
         user_result = self._connection.execute(user_query).first()
         if user_result is None:
             raise UserDoesNotExist("The user does not exist")
+        
 
         total_files_size_query = select(func.sum(FileTable.c.file_size)).where(FileTable.c.user_id == file.user_id)
         total_files_size_result = self._connection.execute(total_files_size_query).scalar() or 0
         new_total_size = total_files_size_result + file.file_size
-        user_plan_level = user_result.user_plan
-        user_plan_limit = storage_plans[user_plan_level][1]
+
+        user_plan_name = user_result.name
+        user_plan_limit = user_result.limit
         required_space = new_total_size - user_plan_limit
         if new_total_size > user_plan_limit:
             raise StorageLimitExceeded(
                 "Adding this file would exceed the user's storage limit",
-                current_plan_level=user_plan_level,
-                required_space=required_space)
+                current_plan_name=user_plan_name,
+                required_space=required_space,
+                new_total_size=new_total_size)
 
         insert_stmt = (
             insert(FileTable).values(file.model_dump() | {"file_id": str(file.file_id)})
@@ -112,3 +115,11 @@ class StorageRepository():
             raise FileDoesNotExist()
         self._connection.close()
         return file_id
+    
+    def get_required_plan(self, storage_total) -> str:
+        try:
+            stmt = select(PlansTable.c.name).where(PlansTable.c.limit >= storage_total).order_by(asc(PlansTable.c.limit)).limit(1)
+            result = self._connection.execute(stmt).fetchone()
+        except Exception as e:
+            print(e)
+        return result.name

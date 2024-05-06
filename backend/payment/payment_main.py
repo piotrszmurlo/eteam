@@ -94,8 +94,10 @@ async def create_payment(amount: int, token: Annotated[str, Depends(verify_token
         payment_repo.insert_payment(payment)
     except PaymentDataBaseError:
         raise HTTPException(status_code=400, detail="Could not register a new payment in database.")
+    print("Link to payment:")
     print(checkout_session.url)
-    return RedirectResponse(url=checkout_session.url)
+    return checkout_session.url
+    # return RedirectResponse(url=checkout_session.url)
 
 
 @payment_app.post("/webhook")

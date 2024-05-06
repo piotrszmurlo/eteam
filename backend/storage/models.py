@@ -47,5 +47,5 @@ class FileDeleteModel(BaseModel):
 
 
 class UpgradePlan(BaseModel):
-    upgrade_plan_level: int
-    cost: int
+    current_plan_name: str
+    upgrade_plan_name: str

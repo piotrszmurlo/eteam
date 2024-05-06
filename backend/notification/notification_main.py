@@ -1,5 +1,6 @@
 from typing import Annotated
 
+import requests
 from fastapi import FastAPI, Depends, HTTPException
 from common.dependencies import verify_token
 from notification.models import UserIdResponse, UserModel, UserEmailInput, UpgradePlan
@@ -36,12 +37,28 @@ async def get_user_email(token: Annotated[str, Depends(verify_token)]) -> UserMo
         raise HTTPException(status_code=400, detail="User does not exist!")
     return email
 
-@notification_app.get("/upgrade_plan")
-async def upgrade_plan(upgrade_details: UpgradePlan, token: Annotated[str, Depends(verify_token)]) -> str:
+
+
+
+@notification_app.post("/upgrade_plan")
+async def upgrade_plan(upgrade_details: UpgradePlan, token: Annotated[str, Depends(verify_token)]):
+# async def upgrade_plan(upgrade_details: UpgradePlan):
+
+    print(f"NOTIFICATION: Your current plan is {upgrade_details.current_plan_name} and you need to upgrade to {upgrade_details.upgrade_plan_name}")
+
+
     # TODO:
-    # tutaj wyświelić zawartość upgrade details
-    # i wygenerować link do płatności za pomocą payment/create_payment (amount=upgrade_details = cost)
-    return upgrade_details.upgrade_plan_level
+    # - poprosić create_payment o link podając nowy plan
+    # - printujemy link
+
+    # - 
+
+
+    # payment_url = requests.post('http://localhost:8000/payment/create_payment')
+
+    # print(f"Here is link: {payment_url}")
+
+    return upgrade_details.upgrade_plan_name
 
 
 

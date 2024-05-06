@@ -1,4 +1,7 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKey, Float, Enum, Integer
+from sqlalchemy import MetaData, Table, Column, String, ForeignKey, Float, Enum, Integer
+from sqlalchemy import create_engine, select, insert, update, delete
+from sqlalchemy.exc import IntegrityError
+
 
 engine = create_engine("sqlite:///storage/storage.db")
 
@@ -9,7 +12,7 @@ UserTable = Table(
     metadata_obj,
     Column("user_id", String(), primary_key=True),
     Column("user_name", String(128), nullable=False),
-    Column("user_plan", Integer, nullable=False)
+    Column("user_plan", Integer, ForeignKey("plans.level"), nullable=False)
 
 )
 
@@ -22,4 +25,36 @@ FileTable = Table(
     Column("file_size", Float(), nullable=False)
 )
 
+PlansTable = Table(
+    "plans",
+    metadata_obj,
+    Column("level", Integer, primary_key=True),
+    Column("name", String(128), nullable=False),
+    Column("limit", Float(), nullable=False)
+)
+
+
 metadata_obj.create_all(engine)
+
+
+storage_plans = [[0, "basic", 10], [1, "silver", 50], [2, "gold", 100], [3, "unlimited", float('inf')]]
+
+
+def initialize_plans():
+
+    _connection = engine.connect()
+
+    for plan in storage_plans:
+        stmt = (
+            insert(PlansTable).values(tuple(plan))
+        )
+        try:
+            _connection.execute(stmt)
+            _connection.commit()
+        except IntegrityError:
+            _connection.rollback()
+
+    _connection.close()
+
+
+initialize_plans()
