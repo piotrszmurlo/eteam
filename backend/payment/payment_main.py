@@ -2,9 +2,10 @@ import uuid
 from fastapi import FastAPI, Depends, HTTPException, Request, Header
 from typing import Annotated
 from loguru import logger
+import requests
 from common.dependencies import verify_token
 from payment.repository import PaymentRepository
-from payment.models import PaymentModel
+from payment.models import PaymentModel, UpgradePlan
 from payment.exceptions import PaymentDataBaseError, StripePaymentError
 import stripe
 from starlette.responses import RedirectResponse
@@ -34,25 +35,50 @@ async def get_body(request: Request) -> bytes:
 
 
 @payment_app.get("/payment_success")
-async def payment_success(user_id: str):
-    payment_repo = PaymentRepository()
+async def payment_success(
+    token: Annotated[str, Depends(verify_token)], upgrade_details: UpgradePlan
+):
+    try:
+        user_id = token["sub"]
+        payment_repo = PaymentRepository()
 
-    user_payments = payment_repo.get_payments(user_id=user_id, status="pending")
-    stripe_events = stripe.Event.list(limit=10, type="checkout.session.completed", created={"gt": datetime.datetime.now(tz=None)-datetime.timedelta(seconds=15)})
+        user_payments = payment_repo.get_payments(user_id=user_id, status="pending")
+        stripe_events = stripe.Event.list(
+            limit=10,
+            type="checkout.session.completed",
+            created={
+                "gt": datetime.datetime.now(tz=None) - datetime.timedelta(seconds=15)
+            },
+        )
 
-    for event in stripe_events:
-        checkout_id = event['data']['object'].get('id')
-        if checkout_id in [u.payment_id for u in user_payments]:
-            payment_repo.update_payment_status(payment_id=checkout_id, new_status="completed")
-        
-    # TODO: UDERZYĆ DO NOTIFICATION
-    # TODO: UDERZYĆ DO STORAGE --> update plan
-    return{"Success payment - payment id": checkout_id}
+        for event in stripe_events:
+            checkout_id = event["data"]["object"].get("id")
+            if checkout_id in [u.payment_id for u in user_payments]:
+                payment_repo.update_payment_status(
+                    payment_id=checkout_id, new_status="completed"
+                )
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {token}",
+        }
+        requests.patch(
+            url=f"http://localhost:8000/storage/upgrade_plan",
+            data=upgrade_details,
+            headers=headers,
+            timeout=10,
+        )
+        # requests.get(url="localhost:8000/notification/upgrade_plan_success", timeout=10)
+    except Exception as e:
+        logger.error(e)
+
+    return {"Success payment - payment id": checkout_id}
+
 
 @payment_app.get("/payment_cancel")
 async def payment_cancel():
-    # TODO: UDERZYĆ DO NOTIFICATION
-    return{"Payment cancelled"}
+    requests.get(url="localhost:8000/notification/upgrade_plan_fail")
+    return {"Payment cancelled"}
 
 
 @payment_app.post("/create_payment")
@@ -72,16 +98,18 @@ async def create_payment(amount: int, token: Annotated[str, Depends(verify_token
             line_items=[
                 {
                     # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
-                    'price': f'{price.id}',
-                    'quantity': 1,
+                    "price": f"{price.id}",
+                    "quantity": 1,
                 },
             ],
-            mode='payment',
-            success_url=f'http://localhost:8000/payment/payment_success?user_id={token["sub"]}',
-            cancel_url='http://localhost:8000/payment/payment_cancel',
+            mode="payment",
+            success_url=f"http://localhost:8000/payment/payment_success?token={token}",
+            cancel_url="http://localhost:8000/payment/payment_cancel",
         )
     except StripePaymentError:
-        raise HTTPException(status_code=500, detail="Could not create new payment in Stripe.")
+        raise HTTPException(
+            status_code=500, detail="Could not create new payment in Stripe."
+        )
 
     payment_repo = PaymentRepository()
     payment = PaymentModel(
@@ -89,11 +117,13 @@ async def create_payment(amount: int, token: Annotated[str, Depends(verify_token
         user_id=token["sub"],
         amount=amount,
         status="pending",
-        )
+    )
     try:
         payment_repo.insert_payment(payment)
     except PaymentDataBaseError:
-        raise HTTPException(status_code=400, detail="Could not register a new payment in database.")
+        raise HTTPException(
+            status_code=400, detail="Could not register a new payment in database."
+        )
     print(checkout_session.url)
     return RedirectResponse(url=checkout_session.url)
 
