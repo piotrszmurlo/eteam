@@ -3,7 +3,7 @@ from certifi import where
 from sqlalchemy import create_engine, insert, select, update
 from sqlalchemy.exc import IntegrityError
 from payment.models import PaymentModel
-from payment.database_definition import PaymentTable
+from payment.database_definition import PaymentTable, CostTable
 from payment.exceptions import PaymentDataBaseError
 
 
@@ -49,3 +49,10 @@ class PaymentRepository:
             raise PaymentDataBaseError()
         self._connection.close()
         return payment_id
+    
+    def get_stripe_product(self, plan_name):
+        stmt = (
+            select(CostTable.c.price_id).where(CostTable.c.name == plan_name)
+        )
+        result = self._connection.execute(stmt).fetchone()
+        return result.price_id

@@ -56,12 +56,7 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
         upgrade_plan_name = storage_repo.get_required_plan(e.new_total_size)
         upgrade_details = UpgradePlan(current_plan_name=e.current_plan_name, upgrade_plan_name=upgrade_plan_name)
 
-        try:
-            task = asyncio.create_task(requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump()))
-        except Exception as e:
-            print(e)
-
-        # requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump())
+        result = requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump())
         raise HTTPException(status_code=413, detail=detail_message)
     except Exception as e:
         print(e)

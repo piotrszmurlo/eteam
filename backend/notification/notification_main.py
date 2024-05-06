@@ -42,23 +42,12 @@ async def get_user_email(token: Annotated[str, Depends(verify_token)]) -> UserMo
 
 @notification_app.post("/upgrade_plan")
 async def upgrade_plan(upgrade_details: UpgradePlan, token: Annotated[str, Depends(verify_token)]):
-# async def upgrade_plan(upgrade_details: UpgradePlan):
 
     print(f"NOTIFICATION: Your current plan is {upgrade_details.current_plan_name} and you need to upgrade to {upgrade_details.upgrade_plan_name}")
 
+    # opublikowanie notyfikacji w oracle
 
-    # TODO:
-    # - poprosić create_payment o link podając nowy plan
-    # - printujemy link
-
-    # - 
-
-
-    # payment_url = requests.post('http://localhost:8000/payment/create_payment')
-
-    # print(f"Here is link: {payment_url}")
-
-    return upgrade_details.upgrade_plan_name
+    return 1
 
 
 

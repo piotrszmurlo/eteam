@@ -29,7 +29,7 @@ PlansTable = Table(
     "plans",
     metadata_obj,
     Column("level", Integer, primary_key=True),
-    Column("name", String(128), nullable=False),
+    Column("name", String(128), nullable=False, unique=True),
     Column("limit", Float(), nullable=False)
 )
 

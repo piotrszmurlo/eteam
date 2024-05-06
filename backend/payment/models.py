@@ -11,5 +11,4 @@ class StatusEnum(str, Enum):
 class PaymentModel(BaseModel):
     payment_id: str             # zmienione bo: (sqlite3.ProgrammingError) Error binding parameter 1: type 'UUID' is not supported
     user_id: str
-    amount: float
     status: StatusEnum
