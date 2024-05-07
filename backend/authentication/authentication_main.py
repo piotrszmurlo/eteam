@@ -6,13 +6,23 @@ import google_auth_oauthlib.interactive
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from fastapi import Request
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 import os
 
+origins = [
+    "http://localhost:3000",
+]
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 auth_app = FastAPI(debug=True)
-
+auth_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # https://developers.google.com/identity/protocols/oauth2/web-server
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'authentication/client_secret.json',
@@ -29,7 +39,7 @@ def verify_token(token):
 
 @auth_app.get("/hello")
 async def root():
-    return {"message": "hello auth"}
+    return {"hello" : ["kruk", "tomek", "tomasz"]}
 
 
 @auth_app.get("/login")
