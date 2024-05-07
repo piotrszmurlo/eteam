@@ -4,13 +4,13 @@ from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException
 import requests
 from common.dependencies import verify_token
-from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel, UpgradePlan
+from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel, UpgradePlan, UpgradePlanSuccess
 from storage.repository import StorageRepository
 from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
+from common.models import UrlResponseModel
 
 storage_app = FastAPI()
 
-# storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
 
 @storage_app.get("/hello")
 async def root():
@@ -33,7 +33,6 @@ async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdRespon
 async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
     storage_repo = StorageRepository()
     user_id=token["sub"]
-    # user_id += "1"
     try:
         user = storage_repo.get_user(user_id=user_id)
     except UserDoesNotExist:
@@ -50,14 +49,14 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
     except StorageLimitExceeded as e:
+        upgrade_plan_name = storage_repo.get_required_plan(e.new_total_size)
+        upgrade_details = UpgradePlan(current_plan_name=e.current_plan_name, upgrade_plan_name=upgrade_plan_name)
         detail_message = (
             f"Storage limit exceded. Currently your plan is {e.current_plan_name}. You lack {e.required_space} Mb."
         )
-        upgrade_plan_name = storage_repo.get_required_plan(e.new_total_size)
-        upgrade_details = UpgradePlan(current_plan_name=e.current_plan_name, upgrade_plan_name=upgrade_plan_name)
+        detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
+        raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
 
-        result = requests.post('http://localhost:8000/notification/upgrade_plan', json=upgrade_details.model_dump())
-        raise HTTPException(status_code=413, detail=detail_message)
     except Exception as e:
         print(e)
     return FileIdResponse(file_id=file_id)
@@ -93,3 +92,9 @@ async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depend
     except FileDoesNotExist:
         raise HTTPException(status_code=400, detail="File does not exist!")
     return FileIdResponse(file_id=deleted_file_id)
+
+
+@storage_app.patch("/upgrade_plan")
+async def upgrade_plan(data: UpgradePlanSuccess, token: Annotated[str, Depends(verify_token)]):
+    # TODO: insert do bazy danych
+    return {"message": "Plan was upgraded in storage DB."}
