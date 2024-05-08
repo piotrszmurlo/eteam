@@ -6,7 +6,7 @@ import requests
 from common.dependencies import verify_token
 from storage.models import UserIdResponse, UserModel, FileModel, FileIdResponse, FileInsertModel, FileRenameModel, FileDeleteModel, UpgradePlan, UpgradePlanSuccess
 from storage.repository import StorageRepository
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan
 from common.models import UrlResponseModel
 
 storage_app = FastAPI()
@@ -56,9 +56,8 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
         )
         detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
         raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
-
-    except Exception as e:
-        print(e)
+    except CannotGetPlan:
+        raise HTTPException(status_code=400, detail="Cannot get user's current plan!")
     return FileIdResponse(file_id=file_id)
 
 
@@ -96,5 +95,12 @@ async def delete_file(file_delete: FileDeleteModel, token: Annotated[str, Depend
 
 @storage_app.patch("/upgrade_plan")
 async def upgrade_plan(data: UpgradePlanSuccess, token: Annotated[str, Depends(verify_token)]):
-    # TODO: insert do bazy danych
-    return {"message": "Plan was upgraded in storage DB."}
+    storage_repo = StorageRepository()
+    user_id = token["sub"]
+    try:
+        storage_repo.upgrade_plan(user_id=user_id, upgrade_plan_name=data.upgrade_plan_name)
+    except CannotGetPlan:
+        raise HTTPException(status_code=400, detail="Cannot access PlansTable!")
+    except CannotUpgradePlan:
+        raise HTTPException(status_code=400, detail="Cannot upgrade user's plan!")
+    return {"message": f"Plan of user {user_id} was upgraded to {data.upgrade_plan_name} in storage DB."}

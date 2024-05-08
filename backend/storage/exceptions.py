@@ -18,3 +18,9 @@ class StorageLimitExceeded(Exception):
         self.required_space = required_space
         self.new_total_size = new_total_size
         super().__init__(message)
+
+class CannotGetPlan(Exception):
+    ...
+
+class CannotUpgradePlan(Exception):
+    ...

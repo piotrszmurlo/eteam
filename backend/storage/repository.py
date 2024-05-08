@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 
 from storage.models import UserModel, FileModel, FileRenameModel
 from storage.database_definition import UserTable, FileTable, PlansTable
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan
 
 
 storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
@@ -120,6 +120,29 @@ class StorageRepository():
         try:
             stmt = select(PlansTable.c.name).where(PlansTable.c.limit >= storage_total).order_by(asc(PlansTable.c.limit)).limit(1)
             result = self._connection.execute(stmt).fetchone()
-        except Exception as e:
-            print(e)
+        except IntegrityError:
+            raise CannotGetPlan
         return result.name
+    
+    def upgrade_plan(self, user_id: str, upgrade_plan_name: str):
+        try:
+            stmt = select(PlansTable.c.level).where(PlansTable.c.name == upgrade_plan_name)
+            upgrade_plan_level = self._connection.execute(stmt).fetchone()
+        except IntegrityError:
+            raise CannotGetPlan
+
+        upgrade_plan_level = upgrade_plan_level[0]
+
+        try:
+            stmt = (
+                update(UserTable)
+                .where(UserTable.c.user_id == user_id)
+                .values(user_plan=upgrade_plan_level)
+            )
+            self._connection.execute(stmt)
+            self._connection.commit()
+        except IntegrityError:
+            raise CannotUpgradePlan
+        finally:
+            self._connection.close()
+        return upgrade_plan_name
