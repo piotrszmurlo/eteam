@@ -127,11 +127,9 @@ class StorageRepository():
     def upgrade_plan(self, user_id: str, upgrade_plan_name: str):
         try:
             stmt = select(PlansTable.c.level).where(PlansTable.c.name == upgrade_plan_name)
-            upgrade_plan_level = self._connection.execute(stmt).fetchone()
+            upgrade_plan_level = self._connection.execute(stmt).fetchone().level
         except IntegrityError:
             raise CannotGetPlan
-
-        upgrade_plan_level = upgrade_plan_level[0]
 
         try:
             stmt = (
