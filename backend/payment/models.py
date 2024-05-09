@@ -1,19 +1,20 @@
-from pydantic import Field
-from enum import Enum
-import uuid
+from enum import StrEnum
 from common.base_model import BaseModel
+from common.models import UrlResponseModel
 
 
-class StatusEnum(str, Enum):
+class StatusEnum(StrEnum):
     pending = "pending"
-    created = "created"
-    failed = "failed"
     completed = "completed"
+    failed = "failed"
 
 
 class PaymentModel(BaseModel):
-    payment_id: uuid.UUID = Field(default_factory=uuid.uuid4)
-    stripe_id: str | None
+    payment_id: str
     user_id: str
-    amount: float
     status: StatusEnum
+
+
+class PaymentSuccessModel(BaseModel):
+    notification_url: UrlResponseModel
+    storage_url: UrlResponseModel
