@@ -1,4 +1,5 @@
 from common.base_model import BaseModel
+from common.models import UpgradePlanArgs
 
 
 class UserModel(BaseModel):
@@ -12,9 +13,5 @@ class UserIdResponse(BaseModel):
 class UserEmailInput(BaseModel):
     user_email: str
 
-class UpgradePlan(BaseModel):
+class UpgradePlan(UpgradePlanArgs):
     current_plan_name: str
-    upgrade_plan_name: str
-
-class CreatePaymentDetails(BaseModel):
-    upgrade_plan_name: str

@@ -25,7 +25,7 @@ FileTable = Table(
     Column("file_size", Float(), nullable=False)
 )
 
-PlansTable = Table(
+PlanTable = Table(
     "plans",
     metadata_obj,
     Column("level", Integer, primary_key=True),
@@ -46,7 +46,7 @@ def initialize_plans():
 
     for plan in storage_plans:
         stmt = (
-            insert(PlansTable).values(tuple(plan))
+            insert(PlanTable).values(tuple(plan))
         )
         try:
             _connection.execute(stmt)

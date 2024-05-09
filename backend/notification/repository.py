@@ -37,4 +37,3 @@ class NotificationRepository():
         finally:
             self._connection.close()
         return UserModel.model_validate(user)
-
