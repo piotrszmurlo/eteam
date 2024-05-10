@@ -35,9 +35,16 @@ class FileManager():
             return False
         return True
 
-    def retrive_file(self, user_id: uuid.UUID, file_id: uuid.UUID):
+    def retrive_file(self, file_id: uuid.UUID):
         file_path = Path(self.user_data_path, str(file_id))
         if file_path.exists():
             return file_path.read_bytes()
+        else:
+            raise FileDoesNotExist
+
+    def get_path_to_file(self, file_id: uuid.UUID):
+        file_path = Path(self.user_data_path, str(file_id))
+        if file_path.exists():
+            return file_path
         else:
             raise FileDoesNotExist

@@ -104,6 +104,26 @@ class StorageRepository():
         return [FileModel.model_validate(file) for file in files]
 
 
+    def get_file_by_id(self, user_id: str, file_id: str) -> FileModel:
+        user_stmt = select(UserTable).where(UserTable.c.user_id == user_id)
+        user_result = self._connection.execute(user_stmt).first()
+
+        if user_result is None:
+            raise UserDoesNotExist()
+        stmt = (
+            select(FileTable)
+            .where(FileTable.c.file_id == file_id)
+        )
+        try:
+            file = self._connection.execute(stmt).fetchone()
+        except IntegrityError:
+            raise FileDoesNotExist()
+        finally:
+            self._connection.close()
+        self._connection.close()
+        return FileModel.model_validate(file)
+
+
     def rename_file(self, file_id: uuid.UUID, new_file: FileRenameModel) -> uuid.UUID:
         update_dict = new_file.model_dump(exclude_none=True)
         if not update_dict:
