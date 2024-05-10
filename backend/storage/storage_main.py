@@ -53,7 +53,7 @@ async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
 @storage_app.post("/files")
 async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
-    file_manager = FileManager()
+    file_manager = FileManager(user_id=token["sub"])
     contents = await file_input.read()
     contents_mb_size = sys.getsizeof(contents)/1024 ** 2
     file = FileModel(
@@ -74,7 +74,7 @@ async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_
         raise HTTPException(status_code=500, detail="An unexpected error ocurred when trying to save the file")
 
     if not limit_exceeded:
-        file_manager.insert_file(token["sub"], file_id, contents)
+        file_manager.insert_file(file_id, contents)
         return FileIdModel(file_id=file_id)
 
     try:

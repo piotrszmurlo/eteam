@@ -3,7 +3,7 @@ from pathlib import Path, PurePath
 import os
 from storage.exceptions import FileDoesNotExist
 
-STORAGE_FS_PATH = PurePath(os.path.dirname(__file__), 'storage_fs')
+STORAGE_FOLDER = 'storage_fs'
 
 
 class FileManager():
@@ -19,11 +19,14 @@ class FileManager():
                     .
                     .
     """
-    def __init__(self) -> None:
-        pass
+    def __init__(self, user_id: uuid.UUID) -> None:
+        self.user_data_path = PurePath(
+                                        os.path.dirname(__file__),
+                                        STORAGE_FOLDER,
+                                        str(user_id))
 
-    def insert_file(self, user_id: uuid.UUID, file_id: uuid.UUID, data) -> bool:
-        file_path = Path(STORAGE_FS_PATH, str(user_id), str(file_id))
+    def insert_file(self, file_id: uuid.UUID, data) -> bool:
+        file_path = Path(self.user_data_path, str(file_id))
         Path(file_path).parent.mkdir(parents=True, exist_ok=True)
         try:
             with open(file_path, 'wb+') as user_file:
@@ -33,9 +36,8 @@ class FileManager():
         return True
 
     def retrive_file(self, user_id: uuid.UUID, file_id: uuid.UUID):
-        file_path = Path(STORAGE_FS_PATH, str(user_id), str(file_id))
+        file_path = Path(self.user_data_path, str(file_id))
         if file_path.exists():
             return file_path.read_bytes()
-        
         else:
             raise FileDoesNotExist
