@@ -14,6 +14,7 @@ import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
 import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import { Avatar } from "@mui/joy";
 
 function ColorSchemeToggle() {
   const { mode, setMode } = useColorScheme();
@@ -46,8 +47,7 @@ function ColorSchemeToggle() {
   );
 }
 
-export default function Header() {
-  const [open, setOpen] = React.useState(false);
+export default function Header({ user, onLogout }) {
   return (
     <Box
       sx={{
@@ -66,13 +66,13 @@ export default function Header() {
         }}
       >
         <ColorSchemeToggle />
-        <AccountDropdown />
+        <AccountDropdown user={user} onLogout={onLogout} />
       </Box>
     </Box>
   );
 }
 
-function AccountDropdown() {
+function AccountDropdown({ user, onLogout }) {
   return (
     <Dropdown>
       <MenuButton
@@ -99,12 +99,16 @@ function AccountDropdown() {
               alignItems: "center",
             }}
           >
+            <Box sx={{ paddingRight: "16px" }}>
+              <Avatar src={user.picture}></Avatar>
+            </Box>
+
             <Box>
               <Typography level="title-sm" textColor="text.primary">
-                eteam user
+                {user.given_name} {user.family_name}
               </Typography>
               <Typography level="body-xs" textColor="text.tertiary">
-                eteam@email.com
+                {user.email}
               </Typography>
             </Box>
           </Box>
@@ -115,7 +119,7 @@ function AccountDropdown() {
           Settings
         </MenuItem>
         <ListDivider />
-        <MenuItem>
+        <MenuItem onClick={onLogout}>
           <LogoutRoundedIcon />
           Log out
         </MenuItem>
