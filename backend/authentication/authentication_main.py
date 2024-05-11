@@ -23,13 +23,11 @@ auth_app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# https://developers.google.com/identity/protocols/oauth2/web-server
 flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
     'authentication/client_secret.json',
     scopes=['openid', 'https://www.googleapis.com/auth/userinfo.profile'])
-flow.redirect_uri = 'http://localhost:8000/auth/callback'
 
-CLIENT_ID = None
+CLIENT_ID = flow.client_config["client_id"]
 
 
 def verify_token(token):
@@ -37,27 +35,7 @@ def verify_token(token):
     return info
 
 
-@auth_app.get("/hello")
-async def root():
-    return {"hello" : ["kruk", "tomek", "tomasz"]}
-
-
-@auth_app.get("/login")
-async def login():
-    authorization_url, state = flow.authorization_url(
-        access_type='offline',
-        prompt='select_account'
-    )
-    return RedirectResponse(url=authorization_url)
-
-
-@auth_app.get("/callback")
-async def callback(request: Request):
-    try:
-        token_dict = flow.fetch_token(authorization_response=str(request.url))
-        # token_dict['id_token'] += "AA"         # modyfikacja tokenu powoduje błąd i następuje przekierowanie do ponownego logowania
-        verify_token(token_dict["id_token"])
-        return token_dict["id_token"]
-
-    except Exception:
-        return RedirectResponse(url="http://localhost:8000/auth/login")
+@auth_app.post("/token")
+async def token(token: dict):
+    info = verify_token(token['token'])
+    return info
