@@ -1,12 +1,16 @@
 import uuid
+import sys
 from typing import Annotated
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, UploadFile
+from fastapi.responses import FileResponse
+import requests
 from starlette.middleware.cors import CORSMiddleware
 
 from authentication.authentication_main import origins
 from common.dependencies import verify_token
 from storage.models import UserIdResponse, UserModel, FileModel, FileIdModel, FileInsertModel, FileRenameModel, UpgradePlan
 from storage.repository import StorageRepository
+from storage.file_manager import FileManager
 from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan, FileSaveError
 from common.models import UrlResponseModel, UpgradePlanArgs
 
@@ -48,9 +52,15 @@ async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
 
 
 @storage_app.post("/files")
-async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
+async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
-    file = FileModel(user_id=token["sub"], file_name=file_input.file_name, file_size=file_input.file_size)
+    file_manager = FileManager(user_id=token["sub"])
+    contents = await file_input.read()
+    contents_mb_size = sys.getsizeof(contents)/1024 ** 2
+    file = FileModel(
+                    user_id=token["sub"],
+                    file_name=file_input.filename,
+                    file_size=contents_mb_size)
     limit_exceeded = False
     try:
         file_id = storage_repo.insert_file(file)
@@ -65,6 +75,7 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
         raise HTTPException(status_code=500, detail="An unexpected error ocurred when trying to save the file")
 
     if not limit_exceeded:
+        file_manager.insert_file(file_id, contents)
         return FileIdModel(file_id=file_id)
 
     try:
@@ -89,6 +100,21 @@ async def get_files_for_user(info: Annotated[str, Depends(verify_token)]) -> lis
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
     return files
+
+@storage_app.get("/get_file")
+async def get_file_by_id(file_id: FileIdModel, token: Annotated[str, Depends(verify_token)]) -> FileResponse:
+    storage_repo = StorageRepository()
+    user_id = token["sub"]
+    file_manager = FileManager(user_id)
+    try:
+        file = storage_repo.get_file_by_id(user_id=token['sub'], file_id=str(file_id.file_id))
+    except UserDoesNotExist:
+        raise HTTPException(status_code=400, detail="User does not exist!")
+    except FileDoesNotExist:
+        raise HTTPException(status_code=400, detail="File does not exist!")
+    filename = file.file_name
+    filepath = file_manager.get_path_to_file(file_id=file.file_id)
+    return FileResponse(filename=filename, path=filepath)
 
 
 @storage_app.patch("/files")
