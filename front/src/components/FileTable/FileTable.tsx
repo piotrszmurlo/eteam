@@ -154,7 +154,7 @@ function FileRow({ key, file, onRefresh }) {
             flexDirection: "row",
           }}
         >
-          <Typography level="body-sm">123.3KB</Typography>
+          <Typography level="body-sm">{file.file_size}MB</Typography>
           <FileDropdown
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}

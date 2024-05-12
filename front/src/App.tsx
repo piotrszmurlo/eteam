@@ -10,9 +10,7 @@ export default function EteamApp() {
     try {
       const user = JSON.parse(sessionStorage.user);
       setUser(user);
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }, []);
 
   return (
