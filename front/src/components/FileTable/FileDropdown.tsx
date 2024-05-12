@@ -9,7 +9,7 @@ import ShareIcon from "@mui/icons-material/ShareRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import * as React from "react";
 
-function FileDropdown() {
+function FileDropdown({ onStartRename, onDelete }) {
   return (
     <Dropdown>
       <MenuButton
@@ -34,7 +34,7 @@ function FileDropdown() {
           "--ListItem-radius": "var(--joy-radius-sm)",
         }}
       >
-        <MenuItem>
+        <MenuItem onClick={onStartRename}>
           <RenameIcon />
           Rename file
         </MenuItem>
@@ -42,7 +42,7 @@ function FileDropdown() {
           <ShareIcon />
           Share file
         </MenuItem>
-        <MenuItem sx={{ textColor: "danger.500" }}>
+        <MenuItem onClick={onDelete} sx={{ textColor: "danger.500" }}>
           <DeleteIcon />
           Delete file
         </MenuItem>

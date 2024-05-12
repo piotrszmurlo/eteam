@@ -1,6 +1,9 @@
 import uuid
 from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException
+from starlette.middleware.cors import CORSMiddleware
+
+from authentication.authentication_main import origins
 from common.dependencies import verify_token
 from storage.models import UserIdResponse, UserModel, FileModel, FileIdModel, FileInsertModel, FileRenameModel, UpgradePlan
 from storage.repository import StorageRepository
@@ -9,7 +12,13 @@ from common.models import UrlResponseModel, UpgradePlanArgs
 
 storage_app = FastAPI()
 
-
+storage_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @storage_app.get("/hello")
 async def root():
     return {"message": "hello storage"}

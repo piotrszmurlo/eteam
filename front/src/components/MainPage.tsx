@@ -32,7 +32,7 @@ function MainPage({ user, setUser }) {
               variant="outlined"
               sx={{
                 margin: "auto",
-                width: "50vw",
+                width: "70vw",
                 borderRadius: "sm",
                 display: { xs: "none", md: "flex" },
               }}
