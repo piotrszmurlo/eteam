@@ -105,7 +105,7 @@ function AccountDropdown({ user, onLogout }) {
 
             <Box>
               <Typography level="title-sm" textColor="text.primary">
-                {user.given_name} {user.family_name}
+                {user.name}
               </Typography>
               <Typography level="body-xs" textColor="text.tertiary">
                 {user.email}

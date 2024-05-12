@@ -1,13 +1,12 @@
-
 from fastapi import FastAPI
 
 import google_auth_oauthlib.flow
 import google_auth_oauthlib.interactive
-from google.oauth2 import id_token
 from google.auth.transport import requests
+from google.oauth2.id_token import verify_oauth2_token
 from starlette.middleware.cors import CORSMiddleware
 import os
-
+from requests import post, get
 from common.origins import origins
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
@@ -26,12 +25,24 @@ flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
 CLIENT_ID = flow.client_config["client_id"]
 
 
-def verify_token(token):
-    info = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-    return info
+@auth_app.post("/code")
+async def code(code_response: dict):
+    code = code_response['code']
+    id_token = exchange_code_to_id_token(code)
+    info = verify_oauth2_token(id_token, requests.Request(), CLIENT_ID)
+    return {
+        'id_token': id_token,
+        'info': info
+    }
 
 
-@auth_app.post("/token")
-async def token(token: dict):
-    info = verify_token(token['token'])
-    return info
+def exchange_code_to_id_token(code):
+    token_endpoint = get("https://accounts.google.com/.well-known/openid-configuration").json()['token_endpoint']
+    response = post(token_endpoint, data={
+        'code': code,
+        'client_id': CLIENT_ID,
+        'client_secret': flow.client_config["client_secret"],
+        'redirect_uri': 'postmessage',
+        'grant_type': 'authorization_code'
+    })
+    return response.json()['id_token']
