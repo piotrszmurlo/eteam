@@ -14,13 +14,11 @@ import IconButton from "@mui/joy/IconButton";
 
 export default function FileTable() {
   const [files, setFiles] = useState<any>([]);
-  const token = sessionStorage.id_token;
-  console.log(token);
   const refreshFiles = () => {
     axios
       .get(API_URL + "/storage/files", {
         headers: {
-          Authorization: "Bearer " + token,
+          Authorization: "Bearer " + sessionStorage.id_token,
         },
       })
       .then((res) => {
@@ -71,8 +69,11 @@ function FileRow({ key, file, onRefresh }) {
   const deleteFile = () => {
     axios
       .delete(API_URL + "/storage/files", {
-        data: {
+        params: {
           file_id: file.file_id,
+        },
+        headers: {
+          Authorization: "Bearer " + sessionStorage.id_token,
         },
       })
       .then((res) => onRefresh())
@@ -95,6 +96,9 @@ function FileRow({ key, file, onRefresh }) {
                   {
                     params: {
                       file_id: file.file_id,
+                    },
+                    headers: {
+                      Authorization: "Bearer " + sessionStorage.id_token,
                     },
                   },
                 )
