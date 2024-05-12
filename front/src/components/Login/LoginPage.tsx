@@ -1,7 +1,9 @@
-import { Card, CardContent } from "@mui/joy";
+import { Button, Card, CardContent } from "@mui/joy";
 import Typography from "@mui/joy/Typography";
-import GoogleSignInButton from "./GoogleSignInButton";
 import * as React from "react";
+import { useGoogleLogin } from "@react-oauth/google";
+import axios from "axios";
+import { API_URL } from "../../constants";
 
 function LoginPage({ setUser }) {
   return (
@@ -19,6 +21,24 @@ function LoginPage({ setUser }) {
 }
 
 function LoginCard({ setUser }) {
+  const login = useGoogleLogin({
+    onSuccess: (codeResponse) => {
+      axios
+        .post(API_URL + "/auth/code", {
+          code: codeResponse["code"],
+        })
+        .then((res) => {
+          setUser(res.data.info);
+          sessionStorage.setItem("user", JSON.stringify(res.data.info));
+          sessionStorage.setItem("id_token", res.data.id_token);
+        })
+        .catch((error) => {
+          alert(error);
+        });
+    },
+    scope: "openid email",
+    flow: "auth-code",
+  });
   return (
     <Card
       color="primary"
@@ -33,7 +53,7 @@ function LoginCard({ setUser }) {
         ERSMS Storage Login
       </Typography>
       <CardContent orientation="horizontal" sx={{ paddingTop: "32px" }}>
-        <GoogleSignInButton onSuccess={(email) => setUser(email)} />
+        <Button onClick={() => login()}>Sign in with Google 🚀</Button>
       </CardContent>
     </Card>
   );

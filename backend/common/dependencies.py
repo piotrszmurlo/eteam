@@ -6,7 +6,8 @@ from google.auth.transport import requests
 from google.auth import exceptions
 from fastapi import HTTPException
 
-CLIENT_ID = None
+from authentication.authentication_main import CLIENT_ID
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 

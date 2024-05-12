@@ -81,9 +81,9 @@ async def add_file(file_input: FileInsertModel, token: Annotated[str, Depends(ve
 
 
 @storage_app.get("/files")
-async def get_files_for_user(token: Annotated[str, Depends(verify_token)]) -> list[FileModel]:
+async def get_files_for_user(info: Annotated[str, Depends(verify_token)]) -> list[FileModel]:
     storage_repo = StorageRepository()
-    user_id=token["sub"]
+    user_id = info['sub']
     try:
         files = storage_repo.get_files(user_id=user_id)
     except UserDoesNotExist:

@@ -14,51 +14,57 @@ import IconButton from "@mui/joy/IconButton";
 
 export default function FileTable() {
   const [files, setFiles] = useState<any>([]);
+  const token = sessionStorage.id_token;
+  console.log(token);
   const refreshFiles = () => {
-    axios.get(API_URL + "/storage/files").then((res) => {
-      console.log(res.data);
-      setFiles(res.data);
-    });
+    axios
+      .get(API_URL + "/storage/files", {
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      })
+      .then((res) => {
+        console.log(res.data);
+        setFiles(res.data);
+      });
   };
   useEffect(() => {
     refreshFiles();
   }, []);
 
   return (
-    <div>
-      <Table
-        size="lg"
-        borderAxis="none"
-        variant="soft"
-        sx={{
-          "--TableCell-paddingX": "1rem",
-          "--TableCell-paddingY": "1rem",
-        }}
-      >
-        <thead>
-          <tr>
-            <th>
-              <Typography level="title-sm">File</Typography>
-            </th>
-            <th>
-              <Typography level="title-sm">Last modified</Typography>
-            </th>
-            <th>
-              <Typography level="title-sm">Size</Typography>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map((file) => (
-            <FileRow key={file.id} file={file} onRefresh={refreshFiles} />
-          ))}
-        </tbody>
-      </Table>
-    </div>
+    <Table
+      size="lg"
+      borderAxis="none"
+      variant="soft"
+      sx={{
+        "--TableCell-paddingX": "1rem",
+        "--TableCell-paddingY": "1rem",
+      }}
+    >
+      <thead>
+        <tr>
+          <th>
+            <Typography level="title-sm">File</Typography>
+          </th>
+          <th>
+            <Typography level="title-sm">Last modified</Typography>
+          </th>
+          <th>
+            <Typography level="title-sm">Size</Typography>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {files.map((file) => {
+          return <FileRow key={file.id} file={file} onRefresh={refreshFiles} />;
+        })}
+      </tbody>
+    </Table>
   );
 }
 
-function FileRow({ file, onRefresh }) {
+function FileRow({ key, file, onRefresh }) {
   const [newFileName, setNewFilename] = useState<string>(file.file_name);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
 
@@ -74,7 +80,7 @@ function FileRow({ file, onRefresh }) {
   };
 
   return (
-    <tr>
+    <tr key={key}>
       <td>
         {isRenaming ? (
           <form

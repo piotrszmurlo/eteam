@@ -14,7 +14,13 @@ function MainPage({ user, setUser }) {
       <CssBaseline />
       <Layout.Root sx={{}}>
         <Layout.Header>
-          <Header user={user} onLogout={() => setUser(null)} />
+          <Header
+            user={user}
+            onLogout={() => {
+              sessionStorage.removeItem("user");
+              setUser(null);
+            }}
+          />
         </Layout.Header>
         <Layout.SideNav>
           <Navigation />
