@@ -6,30 +6,13 @@ import * as React from "react";
 import Box from "@mui/joy/Box";
 import axios from "axios";
 import { API_URL } from "../../constants";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ButtonGroup, Input } from "@mui/joy";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/joy/IconButton";
 
-export default function FileTable() {
-  const [files, setFiles] = useState<any>([]);
-  const refreshFiles = () => {
-    axios
-      .get(API_URL + "/storage/files", {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.id_token,
-        },
-      })
-      .then((res) => {
-        console.log(res.data);
-        setFiles(res.data);
-      });
-  };
-  useEffect(() => {
-    refreshFiles();
-  }, []);
-
+export default function FileTable({ files, refreshFiles }) {
   return (
     <Table
       size="lg"

@@ -7,6 +7,8 @@ import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
 import FileTable from "./FileTable/FileTable";
 import * as React from "react";
+import FileUpload from "./FileUpload";
+import MainContent from "./MainContent";
 
 function MainPage({ user, setUser }) {
   return (
@@ -34,17 +36,7 @@ function MainPage({ user, setUser }) {
               flexDirection: "column",
             }}
           >
-            <Sheet
-              variant="outlined"
-              sx={{
-                margin: "auto",
-                width: "70vw",
-                borderRadius: "sm",
-                display: { xs: "none", md: "flex" },
-              }}
-            >
-              <FileTable />
-            </Sheet>
+            <MainContent />
           </Box>
         </Layout.Main>
       </Layout.Root>
