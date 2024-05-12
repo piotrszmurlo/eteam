@@ -31,6 +31,7 @@ function LoginCard({ setUser }) {
           setUser(res.data.info);
           sessionStorage.setItem("user", JSON.stringify(res.data.info));
           sessionStorage.setItem("id_token", res.data.id_token);
+          console.log(res.data.id_token);
         })
         .catch((error) => {
           alert(error);
