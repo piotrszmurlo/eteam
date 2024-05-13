@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 import google_auth_oauthlib.flow
 import google_auth_oauthlib.interactive
@@ -8,6 +8,9 @@ from starlette.middleware.cors import CORSMiddleware
 import os
 from requests import post, get
 from common.origins import origins
+from authentication.repository import AuthenticationRepository
+from authentication.exceptions import UserDoesNotExist
+from authentication.models import UserModel, UserIdResponse
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 auth_app = FastAPI(debug=True)
@@ -30,6 +33,22 @@ async def code(code_response: dict):
     code = code_response['code']
     id_token = exchange_code_to_id_token(code)
     info = verify_oauth2_token(id_token, requests.Request(), CLIENT_ID)
+    token = info
+
+    # tutaj sprawdzenie czy user istnieje, a jak nie to stworzenie
+    auth_repo = AuthenticationRepository()
+    user_id=token["sub"]
+    try:
+        user = auth_repo.get_user(user_id=user_id)
+    except UserDoesNotExist:
+        print("User does not exist!")
+        user = UserModel(user_id=token["sub"], user_name=token["given_name"])
+        try:
+            user_id = auth_repo.insert_user(user)
+            print("New user added.")
+        except Exception as e:
+            print(e)
+
     return {
         'id_token': id_token,
         'info': info
