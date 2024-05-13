@@ -8,8 +8,9 @@ import RenameIcon from "@mui/icons-material/DriveFileRenameOutlineRounded";
 import ShareIcon from "@mui/icons-material/ShareRounded";
 import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import * as React from "react";
+import DownloadIcon from "@mui/icons-material/Download";
 
-function FileDropdown({ onStartRename, onDelete }) {
+function FileDropdown({ onStartRename, onDelete, onDownload }) {
   return (
     <Dropdown>
       <MenuButton
@@ -34,17 +35,21 @@ function FileDropdown({ onStartRename, onDelete }) {
           "--ListItem-radius": "var(--joy-radius-sm)",
         }}
       >
+        <MenuItem onClick={onDownload}>
+          <DownloadIcon />
+          Download
+        </MenuItem>
         <MenuItem onClick={onStartRename}>
           <RenameIcon />
-          Rename file
+          Rename
         </MenuItem>
         <MenuItem>
           <ShareIcon />
-          Share file
+          Share
         </MenuItem>
         <MenuItem onClick={onDelete} sx={{ textColor: "danger.500" }}>
           <DeleteIcon />
-          Delete file
+          Delete
         </MenuItem>
       </Menu>
     </Dropdown>
