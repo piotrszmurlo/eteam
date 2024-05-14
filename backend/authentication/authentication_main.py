@@ -35,7 +35,6 @@ async def code(code_response: dict):
     info = verify_oauth2_token(id_token, requests.Request(), CLIENT_ID)
     token = info
 
-    # tutaj sprawdzenie czy user istnieje, a jak nie to stworzenie
     auth_repo = AuthenticationRepository()
     user_id=token["sub"]
     try:
@@ -46,6 +45,15 @@ async def code(code_response: dict):
         try:
             user_id = auth_repo.insert_user(user)
             print("New user added.")
+            # TODO: --> REQUEST DO STORAGE
+            # data = {
+            #     "token": id_token
+            # }
+            # response = post('http://localhost:8000/storage/user', data=data)
+            # if response.status_code == 200:
+            #     print("Żądanie zostało pomyślnie wysłane.")
+            # else:
+            #     print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
         except Exception as e:
             print(e)
 
