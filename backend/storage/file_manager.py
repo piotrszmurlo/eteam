@@ -48,3 +48,7 @@ class FileManager():
             return file_path
         else:
             raise FileDoesNotExist
+
+    def delete_file(self, file_id: uuid.UUID) -> None:
+        path = self.get_path_to_file(file_id)
+        os.remove(path)
