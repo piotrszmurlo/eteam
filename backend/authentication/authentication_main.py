@@ -36,9 +36,9 @@ def add_user_to_storage(token):
     }
     response = post('http://localhost:8000/storage/user', headers=header)
     if response.status_code == 200:
-        logging.info("Żądanie zostało pomyślnie wysłane.")
+        print("Żądanie zostało pomyślnie wysłane.")
     else:
-        logging.info("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+        print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
 
 
 @auth_app.post("/code")
