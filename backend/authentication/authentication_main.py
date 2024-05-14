@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, BackgroundTasks
 
 import google_auth_oauthlib.flow
 import google_auth_oauthlib.interactive
@@ -11,6 +11,8 @@ from common.origins import origins
 from authentication.repository import AuthenticationRepository
 from authentication.exceptions import UserDoesNotExist
 from authentication.models import UserModel, UserIdResponse
+from time import time
+import logging
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 auth_app = FastAPI(debug=True)
@@ -28,8 +30,19 @@ flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
 CLIENT_ID = flow.client_config["client_id"]
 
 
+def add_user_to_storage(token):
+    header = {
+        "Authorization": f"Bearer {token}"
+    }
+    response = post('http://localhost:8000/storage/user', headers=header)
+    if response.status_code == 200:
+        logging.info("Żądanie zostało pomyślnie wysłane.")
+    else:
+        logging.info("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+
+
 @auth_app.post("/code")
-async def code(code_response: dict):
+async def code(code_response: dict, background_tasks: BackgroundTasks):
     code = code_response['code']
     id_token = exchange_code_to_id_token(code)
     info = verify_oauth2_token(id_token, requests.Request(), CLIENT_ID)
@@ -40,20 +53,16 @@ async def code(code_response: dict):
     try:
         user = auth_repo.get_user(user_id=user_id)
     except UserDoesNotExist:
-        print("User does not exist!")
+        print("user does not exist.")
+        user_exists = False
+
+    if not user_exists:
         user = UserModel(user_id=token["sub"], user_name=token["given_name"])
         try:
             user_id = auth_repo.insert_user(user)
             print("New user added.")
-            # TODO: --> REQUEST DO STORAGE
-            # data = {
-            #     "token": id_token
-            # }
-            # response = post('http://localhost:8000/storage/user', data=data)
-            # if response.status_code == 200:
-            #     print("Żądanie zostało pomyślnie wysłane.")
-            # else:
-            #     print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+            background_tasks.add_task(add_user_to_storage, id_token)
+
         except Exception as e:
             print(e)
 
