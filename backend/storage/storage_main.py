@@ -130,8 +130,10 @@ async def rename_file(file_id: uuid.UUID, file_rename: FileRenameModel, token: A
 @storage_app.delete("/files")
 async def delete_file(file_id: uuid.UUID, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
+    file_manager = FileManager(user_id=token["sub"])
     try:
         deleted_file_id = storage_repo.delete_file(file_id=file_id)
+        file_manager.delete_file(file_id=file_id)
     except FileDoesNotExist:
         raise HTTPException(status_code=400, detail="File does not exist!")
     return FileIdModel(file_id=deleted_file_id)
