@@ -8,7 +8,6 @@ function FileUpload({ onRefresh }) {
   const handleChange = (file) => {
     const form = new FormData();
     form.append("file_input", file);
-    axios.post("https://example.com", form);
     axios
       .post(API_URL + "/storage/files", form, {
         headers: {
@@ -19,7 +18,25 @@ function FileUpload({ onRefresh }) {
         onRefresh();
       })
       .catch((error) => {
-        alert(error);
+        if (error.response.status === 413) {
+          console.log(error.response.data);
+          axios
+            .post(
+              API_URL + "/payment/create_payment",
+              {
+                upgrade_plan_name: "unlimited",
+              },
+              {
+                headers: {
+                  Authorization: "Bearer " + sessionStorage.id_token,
+                },
+              },
+            )
+            .then((res) => {
+              window.location.replace(res.data.payment_url);
+            })
+            .catch((e) => {});
+        }
       });
     setFile(file);
   };

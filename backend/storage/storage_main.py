@@ -40,17 +40,6 @@ async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdRespon
     return UserIdResponse(user_id=user_id)
 
 
-@storage_app.get("/user")
-async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
-    storage_repo = StorageRepository()
-    user_id=token["sub"]
-    try:
-        user = storage_repo.get_user(user_id=user_id)
-    except UserDoesNotExist:
-        raise HTTPException(status_code=400, detail="User does not exist!")
-    return user
-
-
 @storage_app.post("/files")
 async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
