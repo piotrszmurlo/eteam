@@ -9,9 +9,19 @@ from payment.payment_services.stripe import create_checkout_session
 import stripe
 from starlette.responses import RedirectResponse
 import datetime
+from starlette.middleware.cors import CORSMiddleware
+# TODO:
+from authentication.authentication_main import origins
 
 payment_app = FastAPI()
 
+payment_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @payment_app.get("/payment_success")
 async def payment_success(user_id: str, upgrade_plan_name: str) -> PaymentSuccessModel:
@@ -41,6 +51,7 @@ async def payment_cancel(user_id: str):
 
 @payment_app.post("/create_payment")
 async def create_payment(data: UpgradePlanArgs, token: Annotated[str, Depends(verify_token)]) -> RedirectResponse:
+    print('hhh')
     payment_repo = PaymentRepository()
     price_id = payment_repo.get_stripe_product(data.upgrade_plan_name)
     try:

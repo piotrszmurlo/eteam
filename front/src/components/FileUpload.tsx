@@ -19,7 +19,18 @@ function FileUpload({ onRefresh }) {
         onRefresh();
       })
       .catch((error) => {
-        alert(error);
+        alert(error.response.data.detail.data.url);
+        const form2 = axios.toFormData(error.response.data.detail.data.data);
+        form2.append("data", error.response.data.detail.data.data);
+        axios
+        .post(error.response.data.detail.data.url, error.response.data.detail.data.data, {
+          headers: {
+            Authorization: "Bearer " + sessionStorage.id_token,
+          },
+        })
+        .catch((error) => {
+          alert(error.response.data.detail[0].type);
+        })
       });
     setFile(file);
   };

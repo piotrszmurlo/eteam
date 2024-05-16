@@ -47,6 +47,7 @@ async def code(code_response: dict, background_tasks: BackgroundTasks):
     id_token = exchange_code_to_id_token(code)
     info = verify_oauth2_token(id_token, requests.Request(), CLIENT_ID)
     token = info
+    user_exists = True
 
     auth_repo = AuthenticationRepository()
     user_id=token["sub"]
