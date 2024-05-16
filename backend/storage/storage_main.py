@@ -130,9 +130,8 @@ async def delete_file(file_id: uuid.UUID, token: Annotated[str, Depends(verify_t
 
 
 @storage_app.patch("/upgrade_plan")
-async def upgrade_plan(data: UpgradePlanArgs, token: Annotated[str, Depends(verify_token)]):
+async def upgrade_plan(data: UpgradePlanArgs, user_id: str):
     storage_repo = StorageRepository()
-    user_id = token["sub"]
     try:
         storage_repo.upgrade_plan(user_id=user_id, upgrade_plan_name=data.upgrade_plan_name)
     except CannotGetPlan:

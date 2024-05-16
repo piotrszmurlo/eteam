@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Request, Header
+from fastapi import FastAPI, Depends, HTTPException, Request, Header, BackgroundTasks
 from typing import Annotated
 
 from starlette.middleware.cors import CORSMiddleware
@@ -13,6 +13,7 @@ from payment.payment_services.stripe import create_checkout_session
 import stripe
 from starlette.responses import RedirectResponse
 import datetime
+from requests import patch
 
 
 payment_app = FastAPI()
@@ -25,8 +26,15 @@ payment_app.add_middleware(
 )
 
 
+def upgrade_plan_in_storage(upgrade_plan_name, user_id):
+    response = patch(f'http://localhost:8000/storage/upgrade_plan?user_id={user_id}', json={"upgrade_plan_name": upgrade_plan_name})
+    if response.status_code == 200:
+        print("Żądanie zostało pomyślnie wysłane.")
+    else:
+        print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+
 @payment_app.get("/payment_success")
-async def payment_success(user_id: str, upgrade_plan_name: str) -> RedirectResponse:
+async def payment_success(user_id: str, upgrade_plan_name: str, background_tasks: BackgroundTasks) -> RedirectResponse:
     try:
         payment_repo = PaymentRepository()
         user_payments = payment_repo.get_payments(user_id=user_id, status="pending")
@@ -37,11 +45,8 @@ async def payment_success(user_id: str, upgrade_plan_name: str) -> RedirectRespo
                 payment_repo.update_payment_status(payment_id=checkout_id, new_status="completed")
     except PaymentDataBaseError as e:
         raise HTTPException(status_code=500, detail=f'Payment database returned an error: {str(e)}')
-
-    payment_success = PaymentSuccessModel(
-        notification_url=UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan_success', data=UpgradePlanArgs(upgrade_plan_name=upgrade_plan_name)),
-        storage_url=UrlResponseModel(url='http://localhost:8000/storage/upgrade_plan', data=UpgradePlanArgs(upgrade_plan_name=upgrade_plan_name))
-    )
+    
+    background_tasks.add_task(upgrade_plan_in_storage, upgrade_plan_name, user_id)
 
     return RedirectResponse("http://localhost:3000")
 
