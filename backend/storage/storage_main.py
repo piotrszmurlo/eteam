@@ -89,12 +89,7 @@ async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_
     )
     detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
 
-    # TODO: revert url
-    create_payment_details = UpgradePlanArgs(upgrade_plan_name=upgrade_details.upgrade_plan_name)
-    detail_data_2 = UrlResponseModel(url='http://localhost:8000/payment/create_payment', data=create_payment_details.model_dump())
-
-
-    raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data_2.model_dump()})
+    raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
 
 
 @storage_app.get("/files")
