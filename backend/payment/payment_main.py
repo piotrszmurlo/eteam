@@ -1,7 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException, Request, Header
 from typing import Annotated
+
+from starlette.middleware.cors import CORSMiddleware
+
 from common.dependencies import verify_token
 from common.models import UrlResponseModel, UpgradePlanArgs
+from common.origins import origins
 from payment.repository import PaymentRepository
 from payment.models import PaymentModel, PaymentSuccessModel
 from payment.exceptions import PaymentDataBaseError, StripePaymentError
@@ -12,11 +16,17 @@ import datetime
 
 
 payment_app = FastAPI()
-
+payment_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @payment_app.get("/payment_success")
-async def payment_success(user_id: str, upgrade_plan_name: str) -> PaymentSuccessModel:
+async def payment_success(user_id: str, upgrade_plan_name: str) -> RedirectResponse:
     try:
         payment_repo = PaymentRepository()
         user_payments = payment_repo.get_payments(user_id=user_id, status="pending")
@@ -33,7 +43,7 @@ async def payment_success(user_id: str, upgrade_plan_name: str) -> PaymentSucces
         storage_url=UrlResponseModel(url='http://localhost:8000/storage/upgrade_plan', data=UpgradePlanArgs(upgrade_plan_name=upgrade_plan_name))
     )
 
-    return payment_success
+    return RedirectResponse("http://localhost:3000")
 
 @payment_app.get("/payment_cancel")
 async def payment_cancel(user_id: str):
@@ -42,17 +52,17 @@ async def payment_cancel(user_id: str):
 
 
 @payment_app.post("/create_payment")
-async def create_payment(data: UpgradePlanArgs, token: Annotated[str, Depends(verify_token)]) -> RedirectResponse:
+async def create_payment(data: UpgradePlanArgs, info: Annotated[str, Depends(verify_token)]) -> RedirectResponse:
     payment_repo = PaymentRepository()
     price_id = payment_repo.get_stripe_product(data.upgrade_plan_name)
     try:
-        checkout_session = create_checkout_session(price_id=price_id, user_id=token['sub'], upgrade_plan_name=data.upgrade_plan_name)
+        checkout_session = create_checkout_session(price_id=price_id, user_id=info['sub'], upgrade_plan_name=data.upgrade_plan_name)
     except StripePaymentError:
         raise HTTPException(status_code=500, detail="Could not create new payment in Stripe.")
     
     payment = PaymentModel(
         payment_id=checkout_session.id,
-        user_id=token["sub"],
+        user_id=info["sub"],
         status="pending",
     )
     
@@ -61,4 +71,6 @@ async def create_payment(data: UpgradePlanArgs, token: Annotated[str, Depends(ve
     except PaymentDataBaseError:
         raise HTTPException(status_code=400, detail="Could not register a new payment in database.")
     print(f"Link to payment: {checkout_session.url}")
-    return RedirectResponse(url=checkout_session.url)
+    return {
+        "payment_url": checkout_session.url
+    }

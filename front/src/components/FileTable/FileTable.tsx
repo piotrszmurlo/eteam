@@ -11,7 +11,6 @@ import { ButtonGroup, Input } from "@mui/joy";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/joy/IconButton";
-
 export default function FileTable({ files, refreshFiles }) {
   return (
     <Table
@@ -61,6 +60,27 @@ function FileRow({ key, file, onRefresh }) {
       })
       .then((res) => onRefresh())
       .catch(() => alert("failed to delete"));
+  };
+
+  const downloadFile = () => {
+    axios
+      .get(API_URL + "/storage/file/" + file.file_id, {
+        responseType: "blob",
+        headers: {
+          Authorization: "Bearer " + sessionStorage.id_token,
+        },
+      })
+      .then((response) => {
+        var url = window.URL.createObjectURL(response.data);
+        var a = document.createElement("a");
+        console.log(response.headers["Content-Disposition"]);
+        a.href = url;
+        a.download = file.file_name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      })
+      .catch((err) => alert(err));
   };
 
   return (
@@ -141,6 +161,7 @@ function FileRow({ key, file, onRefresh }) {
           <FileDropdown
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}
+            onDownload={downloadFile}
           />
         </Box>
       </td>

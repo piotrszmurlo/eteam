@@ -40,17 +40,6 @@ async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdRespon
     return UserIdResponse(user_id=user_id)
 
 
-@storage_app.get("/user")
-async def get_user(token: Annotated[str, Depends(verify_token)]) -> UserModel:
-    storage_repo = StorageRepository()
-    user_id=token["sub"]
-    try:
-        user = storage_repo.get_user(user_id=user_id)
-    except UserDoesNotExist:
-        raise HTTPException(status_code=400, detail="User does not exist!")
-    return user
-
-
 @storage_app.post("/files")
 async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
@@ -102,13 +91,13 @@ async def get_files_for_user(info: Annotated[str, Depends(verify_token)]) -> lis
         raise HTTPException(status_code=400, detail="User does not exist!")
     return files
 
-@storage_app.get("/get_file")
-async def get_file_by_id(file_id: FileIdModel, token: Annotated[str, Depends(verify_token)]) -> FileResponse:
+@storage_app.get("/file/{file_id}")
+async def get_file_by_id(file_id: str, token: Annotated[str, Depends(verify_token)]) -> FileResponse:
     storage_repo = StorageRepository()
     user_id = token["sub"]
     file_manager = FileManager(user_id)
     try:
-        file = storage_repo.get_file_by_id(user_id=token['sub'], file_id=str(file_id.file_id))
+        file = storage_repo.get_file_by_id(user_id=user_id, file_id=file_id)
     except UserDoesNotExist:
         raise HTTPException(status_code=400, detail="User does not exist!")
     except FileDoesNotExist:
@@ -131,8 +120,10 @@ async def rename_file(file_id: uuid.UUID, file_rename: FileRenameModel, token: A
 @storage_app.delete("/files")
 async def delete_file(file_id: uuid.UUID, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
+    file_manager = FileManager(user_id=token["sub"])
     try:
         deleted_file_id = storage_repo.delete_file(file_id=file_id)
+        file_manager.delete_file(file_id=file_id)
     except FileDoesNotExist:
         raise HTTPException(status_code=400, detail="File does not exist!")
     return FileIdModel(file_id=deleted_file_id)
