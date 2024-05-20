@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 from typing import Annotated
 from fastapi import FastAPI, Depends, HTTPException, UploadFile, BackgroundTasks
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from requests import post
 from starlette.middleware.cors import CORSMiddleware
 
@@ -12,7 +12,7 @@ from common.dependencies import verify_token
 from storage.models import UserIdResponse, UserModel, FileModel, FileIdModel, FileInsertModel, FileRenameModel, UpgradePlan, AccessFileModel
 from storage.repository import StorageRepository
 from storage.file_manager import FileManager
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan, FileSaveError, CannotShareFile
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan, FileSaveError
 from common.models import UrlResponseModel, UpgradePlanArgs
 
 storage_app = FastAPI()
@@ -124,7 +124,7 @@ async def get_shared_files_for_user(info: Annotated[str, Depends(verify_token)])
 
 
 @storage_app.get("/file/{file_id}")
-async def get_file_by_id(file_id: str, token: Annotated[str, Depends(verify_token)]) -> FileResponse:
+async def get_file_by_id(file_id: str, token: Annotated[str, Depends(verify_token)]) -> Response:
     storage_repo = StorageRepository()
     user_id = token["sub"]
     file_manager = FileManager(user_id)
@@ -135,8 +135,10 @@ async def get_file_by_id(file_id: str, token: Annotated[str, Depends(verify_toke
     except FileDoesNotExist:
         raise HTTPException(status_code=400, detail="File does not exist!")
     filename = file.file_name
-    filepath = file_manager.get_path_to_file(file_id=file.file_id)
-    return FileResponse(filename=filename, path=filepath)
+    # filepath = file_manager.get_path_to_file(file_id=file.file_id)
+    file = file_manager.retrive_file(file_id=file.file_id)
+    
+    return Response(content=file)
 
 
 @storage_app.patch("/files")
