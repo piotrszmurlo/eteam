@@ -4,13 +4,12 @@ import Layout from "./Layout";
 import Header from "./Header";
 import Navigation from "./Navigation";
 import Box from "@mui/joy/Box";
-import Sheet from "@mui/joy/Sheet";
-import FileTable from "./FileTable/FileTable";
 import * as React from "react";
-import FileUpload from "./FileUpload";
 import MainContent from "./MainContent";
+import { useState } from "react";
 
 function MainPage({ user, setUser }) {
+  const [tab, setTab] = useState<string>("files");
   return (
     <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
@@ -20,12 +19,14 @@ function MainPage({ user, setUser }) {
             user={user}
             onLogout={() => {
               sessionStorage.removeItem("user");
+              sessionStorage.removeItem("id_token");
               setUser(null);
             }}
+            onClickSettings={() => setTab("settings")}
           />
         </Layout.Header>
         <Layout.SideNav>
-          <Navigation />
+          <Navigation setTab={setTab} />
         </Layout.SideNav>
         <Layout.Main>
           <Box
@@ -36,7 +37,7 @@ function MainPage({ user, setUser }) {
               flexDirection: "column",
             }}
           >
-            <MainContent />
+            <MainContent tab={tab} />
           </Box>
         </Layout.Main>
       </Layout.Root>

@@ -47,7 +47,7 @@ function ColorSchemeToggle() {
   );
 }
 
-export default function Header({ user, onLogout }) {
+export default function Header({ user, onLogout, onClickSettings }) {
   return (
     <Box
       sx={{
@@ -66,13 +66,17 @@ export default function Header({ user, onLogout }) {
         }}
       >
         <ColorSchemeToggle />
-        <AccountDropdown user={user} onLogout={onLogout} />
+        <AccountDropdown
+          user={user}
+          onLogout={onLogout}
+          onClickSettings={onClickSettings}
+        />
       </Box>
     </Box>
   );
 }
 
-function AccountDropdown({ user, onLogout }) {
+function AccountDropdown({ user, onLogout, onClickSettings }) {
   return (
     <Dropdown>
       <MenuButton
@@ -114,7 +118,7 @@ function AccountDropdown({ user, onLogout }) {
           </Box>
         </MenuItem>
         <ListDivider />
-        <MenuItem>
+        <MenuItem onClick={onClickSettings}>
           <SettingsRoundedIcon />
           Settings
         </MenuItem>

@@ -11,7 +11,7 @@ import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
 import ShareRoundedIcon from "@mui/icons-material/ShareRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 
-export default function Navigation() {
+export default function Navigation({ setTab }) {
   return (
     <List size="sm" sx={{ "--ListItem-radius": "8px", "--List-gap": "4px" }}>
       <ListItem nested>
@@ -25,7 +25,12 @@ export default function Navigation() {
           }}
         >
           <ListItem>
-            <ListItemButton selected>
+            <ListItemButton
+              selected
+              onClick={() => {
+                setTab("files");
+              }}
+            >
               <ListItemDecorator>
                 <FolderRoundedIcon fontSize="small" />
               </ListItemDecorator>
@@ -38,14 +43,6 @@ export default function Navigation() {
                 <ShareRoundedIcon fontSize="small" />
               </ListItemDecorator>
               <ListItemContent>Shared files</ListItemContent>
-            </ListItemButton>
-          </ListItem>
-          <ListItem>
-            <ListItemButton>
-              <ListItemDecorator>
-                <DeleteRoundedIcon fontSize="small" />
-              </ListItemDecorator>
-              <ListItemContent>Trash</ListItemContent>
             </ListItemButton>
           </ListItem>
         </List>
