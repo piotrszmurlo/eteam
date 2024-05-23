@@ -3,9 +3,9 @@ import UpgradePlan from "./UpgradePlan";
 import FilesPage from "./FilePage";
 import UpgradePlanCards from "./UpgradePlan";
 
-function MainContent({ tab }) {
+function MainContent({ tab, openDialog }) {
   if (tab == "settings") return <UpgradePlanCards />;
-  return <FilesPage />;
+  return <FilesPage openDialog={openDialog} />;
 }
 
 export default MainContent;

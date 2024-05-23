@@ -7,7 +7,7 @@ import FileUpload from "./FileUpload.js";
 import FileTable from "./FileTable/FileTable.js";
 import * as React from "react";
 
-function FilesPage() {
+function FilesPage({ openDialog }) {
   const [files, setFiles] = useState<any>([]);
   const refreshFiles = () => {
     axios
@@ -37,7 +37,7 @@ function FilesPage() {
           }}
         >
           <Box sx={{ justifySelf: "center" }}>
-            <FileUpload onRefresh={refreshFiles} />
+            <FileUpload onRefresh={refreshFiles} openDialog={openDialog} />
           </Box>
         </Sheet>
       </Box>

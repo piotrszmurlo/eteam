@@ -18,7 +18,9 @@ export default function EteamApp() {
       {user != null ? (
         <MainPage user={user} setUser={setUser} />
       ) : (
-        <LoginPage setUser={setUser} />
+        <div>
+          <LoginPage setUser={setUser} />
+        </div>
       )}
     </div>
   );
