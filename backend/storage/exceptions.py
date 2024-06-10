@@ -34,3 +34,7 @@ class CannotGetPlan(Exception):
 
 class CannotUpgradePlan(Exception):
     ...
+
+
+class CannotShareFile(Exception):
+    ...

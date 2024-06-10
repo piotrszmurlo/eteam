@@ -33,6 +33,13 @@ PlanTable = Table(
     Column("limit", Float(), nullable=False)
 )
 
+FileAccess = Table(
+    "file_access",
+    metadata_obj,
+    Column("user_id", String(), ForeignKey("users.user_id"), primary_key=True),
+    Column("file_id", String(), ForeignKey("files.file_id"), primary_key=True)
+)
+
 
 metadata_obj.create_all(engine)
 

@@ -44,3 +44,10 @@ class FileRenameModel(BaseModel):
 
 class UpgradePlan(UpgradePlanArgs):
     current_plan_name: str
+
+
+class AccessFileModel(BaseModel):
+    user_id: str
+    file_id: str
+    
+    

@@ -3,9 +3,9 @@ import uuid
 from sqlalchemy import create_engine, select, insert, update, delete, func, asc
 from sqlalchemy.exc import IntegrityError, DatabaseError
 
-from storage.models import UserModel, FileModel, FileRenameModel
-from storage.database_definition import UserTable, FileTable, PlanTable
-from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan, FileAlreadyExists, FileSaveError
+from storage.models import UserModel, FileModel, FileRenameModel, AccessFileModel
+from storage.database_definition import UserTable, FileTable, PlanTable, FileAccess
+from storage.exceptions import UserAlreadyExists, UserDoesNotExist, FileDoesNotExist, StorageLimitExceeded, CannotGetPlan, CannotUpgradePlan, FileAlreadyExists, FileSaveError, CannotShareFile
 
 
 storage_plans = [["basic", 10, 0], ["silver", 50, 50], ["gold", 100, 100], ["unlimited", float('inf'), 200]]
@@ -104,6 +104,61 @@ class StorageRepository():
         return [FileModel.model_validate(file) for file in files]
 
 
+    # def get_shared_files(self, user_id: str) -> list[FileModel]:
+    #     user_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
+    #     user_result = self._connection.execute(user_stmt).first()
+    #     if user_result is None:
+    #         raise UserDoesNotExist()
+
+    #     stmt = (
+    #         select(FileAccess).where(FileAccess.c.user_id == user_id)
+    #     )
+    #     files = self._connection.execute(stmt).fetchall()
+    #     self._connection.close()
+    #     return [FileModel.model_validate(file) for file in files]
+    
+    def get_shared_files(self, user_id: str) -> list[FileModel]:
+        # Sprawdzenie, czy użytkownik istnieje
+        user_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
+        user_result = self._connection.execute(user_stmt).first()
+        if user_result is None:
+            raise UserDoesNotExist()
+        
+        # Debugowanie: pobranie wszystkich wpisów z tabeli file_access dla użytkownika
+        access_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
+        access_files = self._connection.execute(access_stmt).fetchall()
+
+        # Debugowanie: wypisanie danych dostępu
+        print("FileAccess entries for user:", access_files)
+
+        stmt = (
+            select(FileTable)
+            .select_from(
+                FileTable.join(FileAccess, FileTable.c.file_id == FileAccess.c.file_id)
+            )
+            .where(FileAccess.c.user_id == user_id)
+        )
+        files = self._connection.execute(stmt).fetchall()
+
+        # Debugowanie: wypisanie plików
+        print("Files shared with user:", files)
+
+        self._connection.close()
+        return [FileModel.model_validate(file) for file in files]
+
+        # Pobranie plików, które są udostępnione użytkownikowi
+        stmt = (
+            select(FileTable)
+            .select_from(
+                FileTable.join(FileAccess, FileTable.c.file_id == FileAccess.c.file_id)
+            )
+            .where(FileAccess.c.user_id == user_id)
+        )
+        files = self._connection.execute(stmt).fetchall()
+        self._connection.close()
+        return [FileModel.model_validate(file) for file in files]
+
+
     def get_file_by_id(self, user_id: str, file_id: str) -> FileModel:
         user_stmt = select(UserTable).where(UserTable.c.user_id == user_id)
         user_result = self._connection.execute(user_stmt).first()
@@ -146,6 +201,7 @@ class StorageRepository():
         self._connection.close()
         return file_id
     
+
     def delete_file(self, file_id: uuid.UUID) -> uuid.UUID:
         stmt = (
             delete(FileTable).where(FileTable.c.file_id == str(file_id))
@@ -199,3 +255,33 @@ class StorageRepository():
         finally:
             self._connection.close()
         return upgrade_plan_name
+
+
+    def share_file(self, share_input: AccessFileModel):
+        stmt = (
+            insert(FileAccess).values(share_input.model_dump())
+        )
+        try:
+            self._connection.execute(stmt)
+            self._connection.commit()
+        except IntegrityError:
+            raise CannotShareFile()
+        finally:
+            self._connection.close()
+        return share_input.user_id
+
+
+    def unshare_file(self, unshare_input: AccessFileModel):
+        stmt = (
+            delete(FileAccess).where(
+                (FileAccess.c.user_id == str(unshare_input.user_id)) &
+                (FileAccess.c.file_id == str(unshare_input.file_id))
+            )
+        )
+        result = self._connection.execute(stmt)
+        self._connection.commit()
+        if result.rowcount == 0:
+            raise CannotShareFile()
+        self._connection.close()
+        return unshare_input.user_id
+    
