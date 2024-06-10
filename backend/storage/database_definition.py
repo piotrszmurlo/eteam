@@ -13,7 +13,6 @@ UserTable = Table(
     Column("user_id", String(), primary_key=True),
     Column("user_name", String(128), nullable=False),
     Column("user_plan", Integer, ForeignKey("plans.level"), nullable=False)
-
 )
 
 FileTable = Table(
@@ -31,6 +30,15 @@ PlanTable = Table(
     Column("level", Integer, primary_key=True),
     Column("name", String(128), nullable=False, unique=True),
     Column("limit", Float(), nullable=False)
+)
+
+FileAccess = Table(
+    "file_access",
+    metadata_obj,
+    Column("file_access_id", String(), primary_key=True),
+    Column("user_id", String(), ForeignKey("users.user_id"), nullable=False),
+    Column("owner_user_id", String(), ForeignKey("users.user_id"), nullable=False),
+    Column("file_id", String(), ForeignKey("files.file_id"), nullable=False)
 )
 
 

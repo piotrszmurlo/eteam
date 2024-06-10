@@ -44,3 +44,12 @@ class FileRenameModel(BaseModel):
 
 class UpgradePlan(UpgradePlanArgs):
     current_plan_name: str
+
+
+class AccessFileModel(BaseModel):
+    file_access_id: uuid.UUID = Field(default_factory=uuid.uuid4)
+    user_id: str
+    owner_user_id: str
+    file_id: str
+    
+    
