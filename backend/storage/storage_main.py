@@ -1,9 +1,10 @@
 import uuid
 import sys
+from datetime import datetime
 from typing import Annotated
-from fastapi import FastAPI, Depends, HTTPException, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse
-import requests
+from requests import post
 from starlette.middleware.cors import CORSMiddleware
 
 from authentication.authentication_main import origins
@@ -28,8 +29,15 @@ async def root():
     return {"message": "hello storage"}
 
 
+def add_user_in_notification():
+    response = post(f'http://localhost:8000/notification/user')
+    if response.status_code == 200:
+        print("Żądanie zostało pomyślnie wysłane.")
+    else:
+        print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+
 @storage_app.post("/user")
-async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdResponse:
+async def add_user(token: Annotated[str, Depends(verify_token)], background_tasks: BackgroundTasks) -> UserIdResponse:
     storage_repo = StorageRepository()
     user = UserModel(user_id=token["sub"], user_name=token["given_name"])
     try:
@@ -37,11 +45,21 @@ async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdRespon
     except UserAlreadyExists:
         existing_user_name = token["given_name"]
         raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
+    
+    background_tasks.add_task(add_user_in_notification)
+
     return UserIdResponse(user_id=user_id)
 
 
+def add_file_in_notification(file_id, file_name):
+    response = post(f'http://localhost:8000/notification/file', json={"file_id": file_id, "file_name": file_name})
+    if response.status_code == 200:
+        print("Żądanie zostało pomyślnie wysłane.")
+    else:
+        print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+
 @storage_app.post("/files")
-async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
+async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)], background_tasks: BackgroundTasks) -> FileIdModel:
     storage_repo = StorageRepository()
     file_manager = FileManager(user_id=token["sub"])
     contents = await file_input.read()
@@ -77,6 +95,8 @@ async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_
         f"Storage limit exceded. Currently your plan is {current_plan_name}. You lack {required_space} Mb."
     )
     detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
+
+    background_tasks.add_task(add_file_in_notification, file_id, file_input.filename)
 
     raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
 
@@ -153,13 +173,25 @@ async def upgrade_plan(data: UpgradePlanArgs, user_id: str):
     return {"message": f"Plan of user {user_id} was upgraded to {data.upgrade_plan_name} in storage DB."}
 
 
+def sharing_notification(timestamp, user_id, owner_user_id, file_id):
+    response = post(f'http://localhost:8000/notification/file', json={"timestamp": timestamp, "user_id": user_id, "owner_user_id": owner_user_id, "file_id": file_id})
+    if response.status_code == 200:
+        print("Żądanie zostało pomyślnie wysłane.")
+    else:
+        print("Wystąpił problem podczas wysyłania żądania. Kod statusu:", response.status_code)
+
 @storage_app.post("/shared_files")
-async def share_file(share_input: AccessFileModel):
+async def share_file(share_input: AccessFileModel, background_tasks: BackgroundTasks):
     storage_repo = StorageRepository()
     try:
         storage_repo.share_file(share_input=share_input)
     except CannotShareFile:
         raise HTTPException(status_code=400, detail="Cannot share file!")
+    
+    now = datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+    background_tasks.add_task(sharing_notification, timestamp, share_input.user_id, share_input.owner_user_id, share_input.file_id)
+
     return {"message": f"File {share_input.file_id} was shared to {share_input.user_id}."}
 
 

@@ -222,7 +222,7 @@ class StorageRepository():
 
     def share_file(self, share_input: AccessFileModel):
         stmt = (
-            insert(FileAccess).values(share_input.model_dump())
+            insert(FileAccess).values(share_input.model_dump() | {"file_access_id": str(share_input.file_access_id)})
         )
         try:
             self._connection.execute(stmt)
