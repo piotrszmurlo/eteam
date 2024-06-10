@@ -103,50 +103,13 @@ class StorageRepository():
         self._connection.close()
         return [FileModel.model_validate(file) for file in files]
 
-
-    # def get_shared_files(self, user_id: str) -> list[FileModel]:
-    #     user_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
-    #     user_result = self._connection.execute(user_stmt).first()
-    #     if user_result is None:
-    #         raise UserDoesNotExist()
-
-    #     stmt = (
-    #         select(FileAccess).where(FileAccess.c.user_id == user_id)
-    #     )
-    #     files = self._connection.execute(stmt).fetchall()
-    #     self._connection.close()
-    #     return [FileModel.model_validate(file) for file in files]
     
     def get_shared_files(self, user_id: str) -> list[FileModel]:
-        # Sprawdzenie, czy użytkownik istnieje
         user_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
         user_result = self._connection.execute(user_stmt).first()
         if user_result is None:
             raise UserDoesNotExist()
         
-        # Debugowanie: pobranie wszystkich wpisów z tabeli file_access dla użytkownika
-        access_stmt = select(FileAccess).where(FileAccess.c.user_id == user_id)
-        access_files = self._connection.execute(access_stmt).fetchall()
-
-        # Debugowanie: wypisanie danych dostępu
-        print("FileAccess entries for user:", access_files)
-
-        stmt = (
-            select(FileTable)
-            .select_from(
-                FileTable.join(FileAccess, FileTable.c.file_id == FileAccess.c.file_id)
-            )
-            .where(FileAccess.c.user_id == user_id)
-        )
-        files = self._connection.execute(stmt).fetchall()
-
-        # Debugowanie: wypisanie plików
-        print("Files shared with user:", files)
-
-        self._connection.close()
-        return [FileModel.model_validate(file) for file in files]
-
-        # Pobranie plików, które są udostępnione użytkownikowi
         stmt = (
             select(FileTable)
             .select_from(

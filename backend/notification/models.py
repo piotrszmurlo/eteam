@@ -15,3 +15,14 @@ class UserEmailInput(BaseModel):
 
 class UpgradePlan(UpgradePlanArgs):
     current_plan_name: str
+
+class SharingFile(BaseModel):
+    timestamp: str
+    user_id: str
+    owner_user_id: str
+    file_id: str
+    status: bool | False
+
+class FileModel(BaseModel):
+    file_id: str
+    file_name: str

@@ -2,9 +2,9 @@ from typing import Annotated
 import requests
 from fastapi import FastAPI, Depends, HTTPException
 from common.dependencies import verify_token
-from notification.models import UserIdResponse, UserModel, UserEmailInput, UpgradePlan
+from notification.models import UserIdResponse, UserModel, FileModel, UserEmailInput, UpgradePlan, SharingFile
 from notification.repository import NotificationRepository
-from notification.exceptions import UserAlreadyExists, UserDoesNotExist
+from notification.exceptions import UserAlreadyExists, UserDoesNotExist, FileAlreadyExists, FileDoesNotExist
 from common.models import UrlResponseModel, UpgradePlanArgs
 
 
@@ -39,6 +39,26 @@ async def get_user_email(token: Annotated[str, Depends(verify_token)]) -> UserMo
     return user
 
 
+@notification_app.post("/file")
+async def add_file(file: FileModel, token: Annotated[str, Depends(verify_token)]) -> str:
+    notification_repo = NotificationRepository()
+    try:
+        file_id = notification_repo.add_file(file)
+    except FileAlreadyExists:
+        raise HTTPException(status_code=400, detail=f"File {file.file_id} already exists!")
+    return file_id
+
+
+@notification_app.get("/file")
+async def get_file(file_id: str, token: Annotated[str, Depends(verify_token)]) -> FileModel:
+    notification_repo = NotificationRepository()
+    try:
+        file = notification_repo.get_file(file_id=file_id)
+    except FileDoesNotExist:
+        raise HTTPException(status_code=400, detail="File does not exist!")
+    return file
+
+
 @notification_app.post("/upgrade_plan")
 async def upgrade_plan(upgrade_details: UpgradePlan, token: Annotated[str, Depends(verify_token)]) -> UrlResponseModel:
 
@@ -61,3 +81,23 @@ async def upgrade_plan_success(data: UpgradePlanArgs, token: Annotated[str, Depe
 @notification_app.get("/upgrade_plan_fail")
 async def upgrade_plan_fail(token: Annotated[str, Depends(verify_token)]) -> dict[str, str]:
     return {"message": "Fail to upgrade the plan."}
+
+
+@notification_app.post("/sharing_notification")
+async def add_sharing_notification(sharing_data: SharingFile, token: Annotated[str, Depends(verify_token)]) -> str:
+    notification_repo = NotificationRepository()
+    try:
+        file_id = notification_repo.add_notification(sharing_data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Cannot add sharing notification.")
+    return file_id
+
+
+@notification_app.patch("/sharing_notification")
+async def update_sharing_notification_status(file_id: str, token: Annotated[str, Depends(verify_token)]) -> str:
+    notification_repo = NotificationRepository()
+    try:
+        file_id = notification_repo.update_notification_status(file_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Cannot update notification status.")
+    return {"file_id": file_id, "status": "updated"}

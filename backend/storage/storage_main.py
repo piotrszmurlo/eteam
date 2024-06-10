@@ -40,18 +40,6 @@ async def add_user(token: Annotated[str, Depends(verify_token)]) -> UserIdRespon
     return UserIdResponse(user_id=user_id)
 
 
-@storage_app.post("/test_user")
-async def add_user(user_id: str, user_name: str) -> UserIdResponse:
-    storage_repo = StorageRepository()
-    user = UserModel(user_id=user_id, user_name=user_name)
-    try:
-        user_id = storage_repo.insert_user(user)
-    except UserAlreadyExists:
-        existing_user_name = user_name
-        raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
-    return UserIdResponse(user_id=user_id)
-
-
 @storage_app.post("/files")
 async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_token)]) -> FileIdModel:
     storage_repo = StorageRepository()
@@ -91,48 +79,6 @@ async def add_file(file_input: UploadFile, token: Annotated[str, Depends(verify_
     detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
 
     raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
-
-
-@storage_app.post("/test_files")
-async def add_test_file(file_input: UploadFile, user_id: str) -> FileIdModel:
-    storage_repo = StorageRepository()
-    file_manager = FileManager(user_id=user_id)
-    contents = await file_input.read()
-    contents_mb_size = sys.getsizeof(contents)/1024 ** 2
-    file = FileModel(
-                    user_id=user_id,
-                    file_name=file_input.filename,
-                    file_size=contents_mb_size)
-    limit_exceeded = False
-    try:
-        file_id = storage_repo.insert_file(file)
-    except UserDoesNotExist:
-        raise HTTPException(status_code=400, detail="User does not exist!")
-    except StorageLimitExceeded as e:
-        limit_exceeded = True
-        requested_total_storage = e.new_total_size
-        current_plan_name = e.current_plan_name
-        required_space = e.required_space
-    except FileSaveError:
-        raise HTTPException(status_code=500, detail="An unexpected error ocurred when trying to save the file")
-
-    if not limit_exceeded:
-        file_manager.insert_file(file_id, contents)
-        return FileIdModel(file_id=file_id)
-
-    try:
-        upgrade_plan_name = storage_repo.get_required_plan(requested_total_storage)
-    except CannotGetPlan:
-        raise HTTPException(status_code=500, detail="Cannot get user's current plan!")
-
-    upgrade_details = UpgradePlan(current_plan_name=current_plan_name, upgrade_plan_name=upgrade_plan_name)
-    detail_message = (
-        f"Storage limit exceded. Currently your plan is {current_plan_name}. You lack {required_space} Mb."
-    )
-    detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
-
-    raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
-
 
 
 @storage_app.get("/files")
@@ -225,3 +171,59 @@ async def unshare_file(share_input: AccessFileModel):
     except CannotShareFile:
         raise HTTPException(status_code=400, detail="Cannot unshare file!")
     return {"message": f"File {share_input.file_id} was unshared to {share_input.user_id}."}
+
+
+
+# below requests are for ease of testing only
+
+@storage_app.post("/test_user")
+async def add_user(user_id: str, user_name: str) -> UserIdResponse:
+    storage_repo = StorageRepository()
+    user = UserModel(user_id=user_id, user_name=user_name)
+    try:
+        user_id = storage_repo.insert_user(user)
+    except UserAlreadyExists:
+        existing_user_name = user_name
+        raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
+    return UserIdResponse(user_id=user_id)
+
+
+@storage_app.post("/test_files")
+async def add_test_file(file_input: UploadFile, user_id: str) -> FileIdModel:
+    storage_repo = StorageRepository()
+    file_manager = FileManager(user_id=user_id)
+    contents = await file_input.read()
+    contents_mb_size = sys.getsizeof(contents)/1024 ** 2
+    file = FileModel(
+                    user_id=user_id,
+                    file_name=file_input.filename,
+                    file_size=contents_mb_size)
+    limit_exceeded = False
+    try:
+        file_id = storage_repo.insert_file(file)
+    except UserDoesNotExist:
+        raise HTTPException(status_code=400, detail="User does not exist!")
+    except StorageLimitExceeded as e:
+        limit_exceeded = True
+        requested_total_storage = e.new_total_size
+        current_plan_name = e.current_plan_name
+        required_space = e.required_space
+    except FileSaveError:
+        raise HTTPException(status_code=500, detail="An unexpected error ocurred when trying to save the file")
+
+    if not limit_exceeded:
+        file_manager.insert_file(file_id, contents)
+        return FileIdModel(file_id=file_id)
+
+    try:
+        upgrade_plan_name = storage_repo.get_required_plan(requested_total_storage)
+    except CannotGetPlan:
+        raise HTTPException(status_code=500, detail="Cannot get user's current plan!")
+
+    upgrade_details = UpgradePlan(current_plan_name=current_plan_name, upgrade_plan_name=upgrade_plan_name)
+    detail_message = (
+        f"Storage limit exceded. Currently your plan is {current_plan_name}. You lack {required_space} Mb."
+    )
+    detail_data = UrlResponseModel(url='http://localhost:8000/notification/upgrade_plan', data=upgrade_details.model_dump())
+
+    raise HTTPException(status_code=413, detail={"message": detail_message, "data": detail_data.model_dump()})
