@@ -82,6 +82,10 @@ function FileRow({ key, file, onRefresh }) {
       })
       .catch((err) => alert(err));
   };
+  const formatter = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  });
 
   return (
     <tr key={key}>
@@ -157,7 +161,9 @@ function FileRow({ key, file, onRefresh }) {
             flexDirection: "row",
           }}
         >
-          <Typography level="body-sm">{file.file_size}MB</Typography>
+          <Typography level="body-sm">
+            {formatter.format(file.file_size + 0.01)}MB
+          </Typography>
           <FileDropdown
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}
