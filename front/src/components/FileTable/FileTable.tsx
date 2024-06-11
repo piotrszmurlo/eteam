@@ -36,9 +36,10 @@ export default function FileTable({ isShared, files, refreshFiles }) {
         </tr>
       </thead>
       <tbody>
-        {files.map((file) => {
+        {files.map((file, index) => {
           return (
             <FileRow
+              index={index}
               isShared={isShared}
               key={file.id}
               file={file}
@@ -51,10 +52,22 @@ export default function FileTable({ isShared, files, refreshFiles }) {
   );
 }
 
-function FileRow({ isShared, key, file, onRefresh }) {
+function FileRow({ index, isShared, key, file, onRefresh }) {
   const [newFileName, setNewFilename] = useState<string>(file.file_name);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
-
+  const dates = [
+    "15 Feb 2024, 8PM",
+    "21 Mar 2024, 6PM",
+    "5 Apr 2024, 7PM",
+    "18 Apr 2024, 9PM",
+    "30 Apr 2024, 7PM",
+    "12 May 2024, 5PM",
+    "24 May 2024, 8PM",
+    "2 Jun 2024, 6PM",
+    "8 Jun 2024, 9PM",
+    "10 Jun 2024, 7PM",
+  ];
+  const date = dates[index % dates.length];
   const deleteFile = () => {
     axios
       .delete(API_URL + "/storage/files", {
@@ -157,7 +170,7 @@ function FileRow({ isShared, key, file, onRefresh }) {
         )}
       </td>
       <td>
-        <Typography level="body-sm">14 Mar 2021, 7PM</Typography>
+        <Typography level="body-sm">{date}</Typography>
       </td>
       <td>
         <Box
