@@ -8,7 +8,7 @@ import ShareForm from "./components/ShareForm";
 
 export default function EteamApp() {
   const [user, setUser] = useState<any | null>(null);
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = React.useState(false);
 
   useEffect(() => {
     try {

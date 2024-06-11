@@ -29,6 +29,7 @@ function LoginCard({ setUser }) {
         })
         .then((res) => {
           setUser(res.data.info);
+          console.log(res.data.info);
           sessionStorage.setItem("user", JSON.stringify(res.data.info));
           sessionStorage.setItem("id_token", res.data.id_token);
           console.log(res.data.id_token);
