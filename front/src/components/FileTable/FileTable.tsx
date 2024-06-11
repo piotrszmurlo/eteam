@@ -5,7 +5,7 @@ import FileDropdown from "./FileDropdown";
 import * as React from "react";
 import Box from "@mui/joy/Box";
 import axios from "axios";
-import { API_URL } from "../../constants";
+import { STORAGE_URL } from "../../constants";
 import { useState } from "react";
 import { ButtonGroup, Input } from "@mui/joy";
 import CheckIcon from "@mui/icons-material/Check";
@@ -50,7 +50,7 @@ function FileRow({ key, file, onRefresh }) {
 
   const deleteFile = () => {
     axios
-      .delete(API_URL + "/storage/files", {
+      .delete(STORAGE_URL + "/files", {
         params: {
           file_id: file.file_id,
         },
@@ -64,7 +64,7 @@ function FileRow({ key, file, onRefresh }) {
 
   const downloadFile = () => {
     axios
-      .get(API_URL + "/storage/file/" + file.file_id, {
+      .get(STORAGE_URL + "/file/" + file.file_id, {
         responseType: "blob",
         headers: {
           Authorization: "Bearer " + sessionStorage.id_token,
@@ -92,7 +92,7 @@ function FileRow({ key, file, onRefresh }) {
               event.preventDefault();
               axios
                 .patch(
-                  API_URL + "/storage/files",
+                  STORAGE_URL + "/files",
                   {
                     file_name: newFileName,
                   },

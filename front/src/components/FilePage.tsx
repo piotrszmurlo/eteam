@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { API_URL } from "../constants.js";
+import { STORAGE_URL } from "../constants.js";
 import Box from "@mui/joy/Box";
 import Sheet from "@mui/joy/Sheet";
 import FileUpload from "./FileUpload.js";
@@ -11,7 +11,7 @@ function FilesPage({ openDialog }) {
   const [files, setFiles] = useState<any>([]);
   const refreshFiles = () => {
     axios
-      .get(API_URL + "/storage/files", {
+      .get(STORAGE_URL + "/files", {
         headers: {
           Authorization: "Bearer " + sessionStorage.id_token,
         },

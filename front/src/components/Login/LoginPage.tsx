@@ -3,7 +3,7 @@ import Typography from "@mui/joy/Typography";
 import * as React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-import { API_URL } from "../../constants";
+import { AUTH_URL } from "../../constants";
 
 function LoginPage({ setUser }) {
   return (
@@ -24,7 +24,7 @@ function LoginCard({ setUser }) {
   const login = useGoogleLogin({
     onSuccess: (codeResponse) => {
       axios
-        .post(API_URL + "/auth/code", {
+        .post(AUTH_URL + "/code", {
           code: codeResponse["code"],
         })
         .then((res) => {

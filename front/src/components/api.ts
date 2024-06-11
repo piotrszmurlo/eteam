@@ -1,10 +1,10 @@
 import axios from "axios";
-import { API_URL } from "../constants";
+import { PAYMENT_URL } from "../constants";
 
 const postUpgradePlan = (planName: string) => {
   axios
     .post(
-      API_URL + "/payment/create_payment",
+      PAYMENT_URL + "/create_payment",
       {
         upgrade_plan_name: planName,
       },

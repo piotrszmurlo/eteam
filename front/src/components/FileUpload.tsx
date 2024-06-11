@@ -1,6 +1,6 @@
 import { FileUploader } from "react-drag-drop-files";
 import axios from "axios";
-import { API_URL } from "../constants";
+import { STORAGE_URL } from "../constants";
 import { postUpgradePlan } from "./api";
 import PlanModal from "./PlanModal";
 import { Button } from "@mui/joy";
@@ -12,7 +12,7 @@ function FileUpload({ onRefresh, openDialog }) {
     const form = new FormData();
     form.append("file_input", file);
     axios
-      .post(API_URL + "/storage/files", form, {
+      .post(STORAGE_URL + "/files", form, {
         headers: {
           Authorization: "Bearer " + sessionStorage.id_token,
         },

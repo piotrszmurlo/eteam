@@ -52,28 +52,28 @@ async def log_middleware(request: Request, call_next):
 def exception_handler_auth(
     request: Request, exc: RedirectAuthServiceException
 ) -> Response:
-    return RedirectResponse(url="http://localhost:8000/auth/hello")
+    return RedirectResponse(url="http://localhost:8001/auth/hello")
 
 
 @app.exception_handler(RedirectStorageServiceException)
 def exception_handler_storage(
     request: Request, exc: RedirectStorageServiceException
 ) -> Response:
-    return RedirectResponse(url="http://localhost:8000/storage/hello")
+    return RedirectResponse(url="http://localhost:8002/storage/hello")
 
 
 @app.exception_handler(RedirectNotificationServiceException)
 def exception_handler_notification(
     request: Request, exc: RedirectNotificationServiceException
 ) -> Response:
-    return RedirectResponse(url="http://localhost:8000/notification/hello")
+    return RedirectResponse(url="http://localhost:8004/notification/hello")
 
 
 @app.exception_handler(RedirectPaymentServiceException)
 def exception_handler_payment(
     request: Request, exc: RedirectPaymentServiceException
 ) -> Response:
-    return RedirectResponse(url="http://localhost:8000/payment/hello")
+    return RedirectResponse(url="http://localhost:8003/payment/hello")
 
 
 @app.get("/hello")
