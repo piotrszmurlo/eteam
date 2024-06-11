@@ -1,6 +1,8 @@
 import { Dialog, DialogContentText, TextField } from "@mui/material";
 import { Button, DialogActions, DialogContent, DialogTitle } from "@mui/joy";
 import * as React from "react";
+import axios from "axios";
+import { API_URL } from "../constants";
 
 export default function ShareForm({ open, setOpen }) {
   const handleClickOpen = () => {
@@ -24,6 +26,7 @@ export default function ShareForm({ open, setOpen }) {
             const formJson = Object.fromEntries((formData as any).entries());
             const email = formJson.email;
             console.log(email);
+            postShareFile(email);
             handleClose();
           },
         }}
@@ -40,7 +43,7 @@ export default function ShareForm({ open, setOpen }) {
             id="name"
             name="email"
             label="Email Address"
-            type="email"
+            // type="email"
             fullWidth
             variant="standard"
           />
@@ -52,3 +55,22 @@ export default function ShareForm({ open, setOpen }) {
     </React.Fragment>
   );
 }
+const postShareFile = (user: string) => {
+  const userId = JSON.parse(sessionStorage.user).sub;
+  axios
+    .post(
+      API_URL + "/storage/shared_files",
+      {
+        user_id: user,
+        owner_user_id: userId,
+        file_id: "123",
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + sessionStorage.id_token,
+        },
+      },
+    )
+    .then((res) => {})
+    .catch((e) => {});
+};
