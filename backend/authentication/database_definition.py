@@ -12,8 +12,8 @@ UserTable = Table(
     metadata_obj,
     Column("user_id", String(), primary_key=True),
     Column("user_name", String(128), nullable=False),
-    Column("user_plan", Integer, nullable=False)            # tutaj usunąłem ForeignKey("plans.level") - czy potrzebujemy tutaj planu?
-
+    Column("user_plan", Integer, nullable=False),
+    Column("user_email", String(128), nullable=False)
 )
 
 metadata_obj.create_all(engine)

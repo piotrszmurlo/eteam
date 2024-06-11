@@ -58,7 +58,7 @@ async def code(code_response: dict, background_tasks: BackgroundTasks):
         user_exists = False
 
     if not user_exists:
-        user = UserModel(user_id=token["sub"], user_name=token["given_name"])
+        user = UserModel(user_id=token["sub"], user_name=token["given_name"], user_email=token["email"])
         try:
             user_id = auth_repo.insert_user(user)
             print("New user added.")
