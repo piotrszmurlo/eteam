@@ -29,8 +29,8 @@ async def root():
     return {"message": "hello storage"}
 
 
-def add_user_in_notification():
-    response = post(f'http://localhost:8000/notification/user')
+def add_user_in_notification(user_id, user_name):
+    response = post(f'http://localhost:8000/notification/test_user', json={"user_id": user_id, "user_name": user_name})
     if response.status_code == 200:
         print("Żądanie zostało pomyślnie wysłane.")
     else:
@@ -46,13 +46,13 @@ async def add_user(token: Annotated[str, Depends(verify_token)], background_task
         existing_user_name = token["given_name"]
         raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
     
-    background_tasks.add_task(add_user_in_notification)
+    background_tasks.add_task(add_user_in_notification, user.user_id, user.user_name)
 
     return UserIdResponse(user_id=user_id)
 
 
 def add_file_in_notification(file_id, file_name):
-    response = post(f'http://localhost:8000/notification/file', json={"file_id": file_id, "file_name": file_name})
+    response = post(f'http://localhost:8000/notification/test_file', json={"file_id": file_id, "file_name": file_name})
     if response.status_code == 200:
         print("Żądanie zostało pomyślnie wysłane.")
     else:
@@ -173,8 +173,8 @@ async def upgrade_plan(data: UpgradePlanArgs, user_id: str):
     return {"message": f"Plan of user {user_id} was upgraded to {data.upgrade_plan_name} in storage DB."}
 
 
-def sharing_notification(timestamp, user_id, owner_user_id, file_id):
-    response = post(f'http://localhost:8000/notification/file', json={"timestamp": timestamp, "user_id": user_id, "owner_user_id": owner_user_id, "file_id": file_id})
+def sharing_notification(timestamp, user_id, owner_user_id, file_id, status):
+    response = post(f'http://localhost:8000/notification/sharing_notification', json={"timestamp": timestamp, "user_id": user_id, "owner_user_id": owner_user_id, "file_id": file_id, "status": status})
     if response.status_code == 200:
         print("Żądanie zostało pomyślnie wysłane.")
     else:
@@ -190,19 +190,19 @@ async def share_file(share_input: AccessFileModel, background_tasks: BackgroundT
     
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-    background_tasks.add_task(sharing_notification, timestamp, share_input.user_id, share_input.owner_user_id, share_input.file_id)
+    # background_tasks.add_task(sharing_notification, timestamp, share_input.user_id, share_input.owner_user_id, share_input.file_id, status=0)
 
     return {"message": f"File {share_input.file_id} was shared to {share_input.user_id}."}
 
 
 @storage_app.delete("/shared_files")
-async def unshare_file(share_input: AccessFileModel):
+async def unshare_file(unshare_input: AccessFileModel):
     storage_repo = StorageRepository()
     try:
-        storage_repo.unshare_file(share_input=share_input)
+        storage_repo.unshare_file(unshare_input=unshare_input)
     except CannotShareFile:
         raise HTTPException(status_code=400, detail="Cannot unshare file!")
-    return {"message": f"File {share_input.file_id} was unshared to {share_input.user_id}."}
+    return {"message": f"File {unshare_input.file_id} was unshared to {unshare_input.user_id}."}
 
 
 
