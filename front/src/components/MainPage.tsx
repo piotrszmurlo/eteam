@@ -39,7 +39,7 @@ function MainPage({ user, setUser }) {
             />
           </Layout.Header>
           <Layout.SideNav>
-            <Navigation setTab={setTab} />
+            <Navigation tab={tab} setTab={setTab} />
           </Layout.SideNav>
           <Layout.Main>
             <Box

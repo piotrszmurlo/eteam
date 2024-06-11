@@ -10,7 +10,7 @@ import DeleteIcon from "@mui/icons-material/DeleteRounded";
 import * as React from "react";
 import DownloadIcon from "@mui/icons-material/Download";
 
-function FileDropdown({ onStartRename, onDelete, onDownload }) {
+function FileDropdown({ isShared, onStartRename, onDelete, onDownload }) {
   return (
     <Dropdown>
       <MenuButton
@@ -43,14 +43,18 @@ function FileDropdown({ onStartRename, onDelete, onDownload }) {
           <RenameIcon />
           Rename
         </MenuItem>
-        <MenuItem>
-          <ShareIcon />
-          Share
-        </MenuItem>
-        <MenuItem onClick={onDelete} sx={{ textColor: "danger.500" }}>
-          <DeleteIcon />
-          Delete
-        </MenuItem>
+        {!isShared && (
+          <MenuItem>
+            <ShareIcon />
+            Share
+          </MenuItem>
+        )}
+        {!isShared && (
+          <MenuItem onClick={onDelete} sx={{ textColor: "danger.500" }}>
+            <DeleteIcon />
+            Delete
+          </MenuItem>
+        )}
       </Menu>
     </Dropdown>
   );

@@ -11,7 +11,7 @@ import { ButtonGroup, Input } from "@mui/joy";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/joy/IconButton";
-export default function FileTable({ files, refreshFiles }) {
+export default function FileTable({ isShared, files, refreshFiles }) {
   return (
     <Table
       size="lg"
@@ -37,14 +37,21 @@ export default function FileTable({ files, refreshFiles }) {
       </thead>
       <tbody>
         {files.map((file) => {
-          return <FileRow key={file.id} file={file} onRefresh={refreshFiles} />;
+          return (
+            <FileRow
+              isShared={isShared}
+              key={file.id}
+              file={file}
+              onRefresh={refreshFiles}
+            />
+          );
         })}
       </tbody>
     </Table>
   );
 }
 
-function FileRow({ key, file, onRefresh }) {
+function FileRow({ isShared, key, file, onRefresh }) {
   const [newFileName, setNewFilename] = useState<string>(file.file_name);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
 
@@ -165,6 +172,7 @@ function FileRow({ key, file, onRefresh }) {
             {formatter.format(file.file_size + 0.01)}MB
           </Typography>
           <FileDropdown
+            isShared={isShared}
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}
             onDownload={downloadFile}

@@ -7,11 +7,11 @@ import FileUpload from "./FileUpload.js";
 import FileTable from "./FileTable/FileTable.js";
 import * as React from "react";
 
-function FilesPage({ openDialog }) {
+function SharedFilesPage({ openDialog }) {
   const [files, setFiles] = useState<any>([]);
   const refreshFiles = () => {
     axios
-      .get(API_URL + "/storage/files", {
+      .get(API_URL + "/storage/shared_files", {
         headers: {
           Authorization: "Bearer " + sessionStorage.id_token,
         },
@@ -27,20 +27,7 @@ function FilesPage({ openDialog }) {
 
   return (
     <Box sx={{ margin: "auto", width: "70vw", justifyContent: "center" }}>
-      <Box sx={{ padding: "1rem" }}>
-        <Sheet
-          variant="outlined"
-          sx={{
-            padding: "2rem",
-            justifySelf: "center",
-            borderRadius: "sm",
-          }}
-        >
-          <Box sx={{ justifySelf: "center" }}>
-            <FileUpload onRefresh={refreshFiles} openDialog={openDialog} />
-          </Box>
-        </Sheet>
-      </Box>
+      <Box sx={{ padding: "1rem" }}></Box>
       <Box sx={{ padding: "1rem" }}>
         <Sheet
           variant="outlined"
@@ -50,7 +37,7 @@ function FilesPage({ openDialog }) {
           }}
         >
           <FileTable
-            isShared={false}
+            isShared={true}
             files={files}
             refreshFiles={refreshFiles}
           />
@@ -59,4 +46,4 @@ function FilesPage({ openDialog }) {
     </Box>
   );
 }
-export default FilesPage;
+export default SharedFilesPage;
