@@ -9,7 +9,7 @@ import MainContent from "./MainContent";
 import { useState } from "react";
 import PlanModal from "./PlanModal";
 
-function MainPage({ user, setUser }) {
+function MainPage({ setDialog, user, setUser }) {
   const [tab, setTab] = useState<string>("files");
   const [openDialog, setOpenDialog] = useState(false);
 
@@ -50,7 +50,11 @@ function MainPage({ user, setUser }) {
                 flexDirection: "column",
               }}
             >
-              <MainContent tab={tab} openDialog={() => setOpenDialog(true)} />
+              <MainContent
+                tab={tab}
+                setDialog={setDialog}
+                openDialog={() => setOpenDialog(true)}
+              />
             </Box>
           </Layout.Main>
         </Layout.Root>

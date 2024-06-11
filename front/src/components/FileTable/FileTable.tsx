@@ -11,7 +11,13 @@ import { ButtonGroup, Input } from "@mui/joy";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/joy/IconButton";
-export default function FileTable({ isShared, files, refreshFiles }) {
+
+export default function FileTable({
+  setDialog,
+  isShared,
+  files,
+  refreshFiles,
+}) {
   return (
     <Table
       size="lg"
@@ -39,6 +45,7 @@ export default function FileTable({ isShared, files, refreshFiles }) {
         {files.map((file, index) => {
           return (
             <FileRow
+              setDialog={setDialog}
               index={index}
               isShared={isShared}
               key={file.id}
@@ -52,20 +59,20 @@ export default function FileTable({ isShared, files, refreshFiles }) {
   );
 }
 
-function FileRow({ index, isShared, key, file, onRefresh }) {
+function FileRow({ setDialog, index, isShared, key, file, onRefresh }) {
   const [newFileName, setNewFilename] = useState<string>(file.file_name);
   const [isRenaming, setIsRenaming] = useState<boolean>(false);
   const dates = [
+    "11 Jun 2024, 6PM",
+    "8 Jun 2024, 9PM",
+    "12 May 2024, 5PM",
+    "24 May 2024, 8PM",
+    "10 Jun 2024, 7PM",
     "15 Feb 2024, 8PM",
     "21 Mar 2024, 6PM",
     "5 Apr 2024, 7PM",
     "18 Apr 2024, 9PM",
     "30 Apr 2024, 7PM",
-    "12 May 2024, 5PM",
-    "24 May 2024, 8PM",
-    "2 Jun 2024, 6PM",
-    "8 Jun 2024, 9PM",
-    "10 Jun 2024, 7PM",
   ];
   const date = dates[index % dates.length];
   const deleteFile = () => {
@@ -185,6 +192,7 @@ function FileRow({ index, isShared, key, file, onRefresh }) {
             {formatter.format(file.file_size + 0.01)}MB
           </Typography>
           <FileDropdown
+            setDialog={setDialog}
             isShared={isShared}
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}

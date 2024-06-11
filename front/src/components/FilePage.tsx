@@ -7,7 +7,7 @@ import FileUpload from "./FileUpload.js";
 import FileTable from "./FileTable/FileTable.js";
 import * as React from "react";
 
-function FilesPage({ openDialog }) {
+function FilesPage({ setDialog, openDialog }) {
   const [files, setFiles] = useState<any>([]);
   const refreshFiles = () => {
     axios
@@ -50,6 +50,7 @@ function FilesPage({ openDialog }) {
           }}
         >
           <FileTable
+            setDialog={setDialog}
             isShared={false}
             files={files}
             refreshFiles={refreshFiles}
