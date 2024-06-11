@@ -38,7 +38,7 @@ class NotificationRepository():
             self._connection.close()
         return UserModel.model_validate(user)
     
-    def add_file(self, file: SharingFile) -> str:
+    def add_file(self, file: FileModel) -> str:
         stmt = (
             insert(FileTable).values(file.model_dump())
         )
@@ -80,7 +80,7 @@ class NotificationRepository():
         stmt = (
             update(NotificationTable)
             .where(NotificationTable.c.file_id == file_id)
-            .values(status=True)
+            .values(status=0)
         )
         try:
             self._connection.execute(stmt)
@@ -90,3 +90,17 @@ class NotificationRepository():
         finally:
             self._connection.close()
         return file_id
+    
+    def get_unread_notification(self, user_id: str) -> list[SharingFile]:
+        stmt = (
+            select(NotificationTable)
+            .where(NotificationTable.c.user_id == user_id)
+            .where(NotificationTable.c.status == 0)
+        )
+        try:
+            notifications = self._connection.execute(stmt).fetchall()
+        except IntegrityError:
+            raise FileDoesNotExist()
+        finally:
+            self._connection.close()
+        return [SharingFile.model_validate(notification) for notification in notifications]

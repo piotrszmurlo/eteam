@@ -90,11 +90,46 @@ async def add_sharing_notification(sharing_data: SharingFile, token: Annotated[s
     return file_id
 
 
+@notification_app.get("/sharing_notification")
+async def get_sharing_notification(token: Annotated[str, Depends(verify_token)]) -> list[SharingFile]:
+    notification_repo = NotificationRepository()
+    try:
+        user_id = token["sub"]
+        notifications = notification_repo.get_unread_notification(user_id=user_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Cannot get sharing notification.")
+    return notifications
+
+
 @notification_app.patch("/sharing_notification")
 async def update_sharing_notification_status(file_id: str, token: Annotated[str, Depends(verify_token)]) -> str:
     notification_repo = NotificationRepository()
     try:
-        file_id = notification_repo.update_notification_status(file_id)
+        file_id = notification_repo.update_notification_status(file_id=file_id)
     except Exception:
         raise HTTPException(status_code=400, detail="Cannot update notification status.")
     return {"file_id": file_id, "status": "updated"}
+
+
+
+# below requests are for ease of testing only
+
+@notification_app.post("/test_user")
+async def add_user(user_id: str, user_name: str) -> UserIdResponse:
+    notification_repo = NotificationRepository()
+    user = UserModel(user_id=user_id, user_name=user_name)
+    try:
+        user_id = notification_repo.insert_user(user)
+    except UserAlreadyExists:
+        existing_user_name = user_name
+        raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
+    return UserIdResponse(user_id=user_id)
+
+@notification_app.post("/test_files")
+async def add_file(file: FileModel) -> str:
+    notification_repo = NotificationRepository()
+    try:
+        file_id = notification_repo.add_file(file)
+    except FileAlreadyExists:
+        raise HTTPException(status_code=400, detail=f"File {file.file_id} already exists!")
+    return file_id

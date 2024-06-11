@@ -17,7 +17,7 @@ class SharingFile(BaseModel):
     user_id: str
     owner_user_id: str
     file_id: str
-    status: bool | False
+    status: bool
 
 class FileModel(BaseModel):
     file_id: str
