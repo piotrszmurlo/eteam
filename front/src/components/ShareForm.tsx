@@ -5,10 +5,6 @@ import axios from "axios";
 import { API_URL } from "../constants";
 
 export default function ShareForm({ open, setOpen }) {
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = () => {
     setOpen(false);
   };
@@ -63,7 +59,7 @@ const postShareFile = (user: string) => {
       {
         user_id: user,
         owner_user_id: userId,
-        file_id: "123",
+        file_id: sessionStorage.current_file_id,
       },
       {
         headers: {

@@ -197,6 +197,9 @@ function FileRow({ setDialog, index, isShared, key, file, onRefresh }) {
             onStartRename={() => setIsRenaming(true)}
             onDelete={deleteFile}
             onDownload={downloadFile}
+            onShare={() => {
+              sessionStorage.setItem("current_file_id", file.file_id);
+            }}
           />
         </Box>
       </td>

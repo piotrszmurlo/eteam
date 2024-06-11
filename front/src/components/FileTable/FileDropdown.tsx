@@ -16,6 +16,7 @@ function FileDropdown({
   onStartRename,
   onDelete,
   onDownload,
+  onShare,
 }) {
   return (
     <Dropdown>
@@ -50,7 +51,12 @@ function FileDropdown({
           Rename
         </MenuItem>
         {!isShared && (
-          <MenuItem onClick={() => setDialog(true)}>
+          <MenuItem
+            onClick={() => {
+              setDialog(true);
+              onShare();
+            }}
+          >
             <ShareIcon />
             Share
           </MenuItem>
