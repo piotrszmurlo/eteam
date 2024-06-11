@@ -125,7 +125,7 @@ async def add_user(user_id: str, user_name: str) -> UserIdResponse:
         raise HTTPException(status_code=400, detail=f"User {existing_user_name} already exists!")
     return UserIdResponse(user_id=user_id)
 
-@notification_app.post("/test_files")
+@notification_app.post("/test_file")
 async def add_file(file: FileModel) -> str:
     notification_repo = NotificationRepository()
     try:

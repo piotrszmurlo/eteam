@@ -8,6 +8,7 @@ class UserModel(BaseModel):
     user_id: str
     user_name: str
     user_plan: int | None = 0
+    user_email: str
 
 class UserIdResponse(BaseModel):
     user_id: str
