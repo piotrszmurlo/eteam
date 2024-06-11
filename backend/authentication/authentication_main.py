@@ -1,4 +1,4 @@
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, HTTPException
 
 import google_auth_oauthlib.flow
 import google_auth_oauthlib.interactive
@@ -71,6 +71,16 @@ async def code(code_response: dict, background_tasks: BackgroundTasks):
         'id_token': id_token,
         'info': info
     }
+
+
+@auth_app.get("/user_email_to_id")
+async def get_user_id(user_email: str):
+    auth_repo = AuthenticationRepository()
+    try:
+        user_id = auth_repo.get_user_id(user_email=user_email)
+    except UserDoesNotExist:
+        raise HTTPException(status_code=400, detail="User does not exists.")
+    return user_id
 
 
 def exchange_code_to_id_token(code):

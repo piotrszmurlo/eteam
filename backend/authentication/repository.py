@@ -40,3 +40,17 @@ class AuthenticationRepository():
             raise UserDoesNotExist()
         self._connection.close()
         return user
+    
+
+    def get_user_id(self, user_email: str) -> str:
+        stmt = select(UserTable.c.user_id).where(UserTable.c.user_email == user_email)
+        try:
+            result = self._connection.execute(stmt).fetchone()
+            if result is None:
+                raise UserDoesNotExist()
+        except IntegrityError:
+            raise UserDoesNotExist()
+        finally:
+            self._connection.close()
+        
+        return result[0]
