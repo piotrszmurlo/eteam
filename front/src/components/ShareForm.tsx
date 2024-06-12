@@ -39,7 +39,7 @@ export default function ShareForm({ open, setOpen }) {
             id="name"
             name="email"
             label="Email Address"
-            // type="email"
+            type="email"
             fullWidth
             variant="standard"
           />
@@ -54,19 +54,32 @@ export default function ShareForm({ open, setOpen }) {
 const postShareFile = (user: string) => {
   const userId = JSON.parse(sessionStorage.user).sub;
   axios
-    .post(
-      API_URL + "/storage/shared_files",
-      {
-        user_id: user,
-        owner_user_id: userId,
-        file_id: sessionStorage.current_file_id,
+    .get(API_URL + "/auth/user_email_to_id", {
+      params: {
+        user_email: user,
       },
-      {
-        headers: {
-          Authorization: "Bearer " + sessionStorage.id_token,
-        },
-      },
-    )
-    .then((res) => {})
-    .catch((e) => {});
+    })
+    .catch((error) => {
+      alert("User not found");
+    })
+    .then((response) => {
+      axios
+        .post(
+          API_URL + "/storage/shared_files",
+          {
+            user_id: response.data,
+            owner_user_id: userId,
+            file_id: sessionStorage.current_file_id,
+          },
+          {
+            headers: {
+              Authorization: "Bearer " + sessionStorage.id_token,
+            },
+          },
+        )
+        .then((res) => {
+          alert("File shared successfully");
+        })
+        .catch((e) => {});
+    });
 };
