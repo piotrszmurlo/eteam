@@ -108,7 +108,7 @@ async def update_sharing_notification_status(file_id: str, token: Annotated[str,
         file_id = notification_repo.update_notification_status(file_id=file_id)
     except Exception:
         raise HTTPException(status_code=400, detail="Cannot update notification status.")
-    return {"file_id": file_id, "status": "updated"}
+    return file_id
 
 
 
