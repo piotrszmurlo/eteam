@@ -80,7 +80,7 @@ class NotificationRepository():
         stmt = (
             update(NotificationTable)
             .where(NotificationTable.c.file_id == file_id)
-            .values(status=0)
+            .values(status=1)
         )
         try:
             self._connection.execute(stmt)
