@@ -17,5 +17,5 @@ ENV PYTHONPATH=/app/backend
 
 EXPOSE 8001
 
-CMD ["uvicorn", "authentication.authentication_main:auth_app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "authentication.authentication_main:auth_app", "--host", "0.0.0.0", "--port", "8001" , "--ssl-certfile", "/certs/cert.pem", "--ssl-keyfile", "/certs/key.pem"]
 

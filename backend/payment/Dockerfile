@@ -34,4 +34,4 @@ ENV PYTHONPATH=/app/backend
 
 EXPOSE 8001
 
-CMD ["uvicorn", "payment.payment_main:payment_app", "--host", "0.0.0.0", "--port", "8003"]
+CMD ["uvicorn", "payment.payment_main:payment_app", "--host", "0.0.0.0", "--port", "8003", "--ssl-certfile", "/certs/cert.pem", "--ssl-keyfile", "/certs/key.pem"]

@@ -17,5 +17,5 @@ ENV PYTHONPATH=/app/backend
 
 EXPOSE 8001
 
-CMD ["uvicorn", "notification.notification_main:notification_app", "--host", "0.0.0.0", "--port", "8004"]
+CMD ["uvicorn", "notification.notification_main:notification_app", "--host", "0.0.0.0", "--port", "8004", "--ssl-certfile", "/certs/cert.pem", "--ssl-keyfile", "/certs/key.pem"]
 

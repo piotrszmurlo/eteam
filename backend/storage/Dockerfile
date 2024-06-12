@@ -17,4 +17,4 @@ ENV PYTHONPATH=/app/backend
 
 EXPOSE 8002
 
-CMD ["uvicorn", "storage.storage_main:storage_app", "--host", "0.0.0.0", "--port", "8002"]
+CMD ["uvicorn", "storage.storage_main:storage_app", "--host", "0.0.0.0", "--port", "8002", "--ssl-certfile", "/certs/cert.pem", "--ssl-keyfile", "/certs/key.pem"]

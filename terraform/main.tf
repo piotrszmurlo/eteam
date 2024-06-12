@@ -10,27 +10,6 @@ provider "docker" {
   host = "unix:///var/run/docker.sock"
 }
 
-# provider "docker" {}
-
-# resource "docker_image" "nginx" {
-#   name         = "nginx:latest"
-#   keep_locally = false
-# }
-
-# resource "docker_container" "nginx" {
-#   image = docker_image.nginx.image_id
-#   name  = "tutorial"
-#   ports {
-#     internal = 80
-#     external = 8000
-#   }
-# }
-
-
-
-
-
-
 resource "docker_network" "my_network" {
   name = "my_network"
 }
@@ -42,7 +21,6 @@ resource "docker_image" "frontend_image" {
     dockerfile = "Dockerfile"
   }
 }
-
 
 resource "docker_image" "auth_image" {
   name         = "auth:latest"
@@ -82,7 +60,23 @@ resource "docker_container" "frontend_container" {
 
   ports {
     internal = 80
-    external = 3000
+    external = 80
+  }
+
+  ports {
+    internal = 443
+    external = 443
+  }
+
+  volumes {
+    host_path      = abspath("${path.module}/../certs")
+    container_path = "/etc/nginx/certs"
+  }
+
+  volumes {
+    host_path      = abspath("${path.module}/nginx.conf")
+    container_path = "/etc/nginx/nginx.conf"
+    read_only      = true
   }
 
   networks_advanced {
@@ -103,9 +97,19 @@ resource "docker_container" "auth_container" {
     external = 8001
   }
 
+  volumes {
+    host_path      = abspath("${path.module}/../certs")
+    container_path = "/certs"
+  }
+
   networks_advanced {
     name = docker_network.my_network.name
   }
+
+  env = [
+    "CERT_PATH=/certs/cert.pem",
+    "KEY_PATH=/certs/key.pem"
+  ]
 
   depends_on = [
     docker_image.auth_image
@@ -121,9 +125,19 @@ resource "docker_container" "storage_container" {
     external = 8002
   }
 
+  volumes {
+    host_path      = abspath("${path.module}/../certs")
+    container_path = "/certs"
+  }
+
   networks_advanced {
     name = docker_network.my_network.name
   }
+
+  env = [
+    "CERT_PATH=/certs/cert.pem",
+    "KEY_PATH=/certs/key.pem"
+  ]
 
   depends_on = [
     docker_image.storage_image
@@ -139,9 +153,19 @@ resource "docker_container" "payment_container" {
     external = 8003
   }
 
+  volumes {
+    host_path      = abspath("${path.module}/../certs")
+    container_path = "/certs"
+  }
+
   networks_advanced {
     name = docker_network.my_network.name
   }
+
+  env = [
+    "CERT_PATH=/certs/cert.pem",
+    "KEY_PATH=/certs/key.pem"
+  ]
 
   depends_on = [
     docker_image.payment_image
@@ -157,45 +181,25 @@ resource "docker_container" "notification_container" {
     external = 8004
   }
 
+  volumes {
+    host_path      = abspath("${path.module}/../certs")
+    container_path = "/certs"
+  }
+
   networks_advanced {
     name = docker_network.my_network.name
   }
+
+  env = [
+    "CERT_PATH=/certs/cert.pem",
+    "KEY_PATH=/certs/key.pem"
+  ]
 
   depends_on = [
     docker_image.notification_image
   ]
 }
 
-# resource "docker_image" "nginx_image" {
-#   name         = "nginx:latest"
-#   keep_locally = false
-# }
 
-# resource "docker_container" "nginx_container" {
-#   name  = "nginx"
-#   image = docker_image.nginx_image.image_id
 
-#   ports {
-#     internal = 80
-#     external = 8000
-#   }
 
-#   networks_advanced {
-#     name = docker_network.my_network.name
-#   }
-
-#   volumes {
-#     host_path      = abspath("${path.module}/nginx.conf")
-#     container_path = "/etc/nginx/nginx.conf"
-#   }
-
-#   depends_on = [
-#     docker_image.nginx_image,
-#     docker_container.frontend_container,
-#     docker_container.auth_container,
-#     # docker_container.storage_container,
-#     # docker_container.payment_container,
-#     # docker_container.notification_container
-#   ]
-  
-# }
