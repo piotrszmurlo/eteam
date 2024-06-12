@@ -5,6 +5,7 @@ import LoginPage from "./components/Login/LoginPage";
 import { Dialog } from "@mui/material";
 import { DialogTitle } from "@mui/joy";
 import ShareForm from "./components/ShareForm";
+import SimpleSnackbar from "./components/NotificationSnackbar";
 
 export default function EteamApp() {
   const [user, setUser] = useState<any | null>(null);
@@ -26,6 +27,7 @@ export default function EteamApp() {
         </div>
       )}
       <ShareForm open={open} setOpen={setOpen}></ShareForm>
+      <SimpleSnackbar></SimpleSnackbar>
     </div>
   );
 }
